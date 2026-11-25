@@ -10,28 +10,28 @@
 
 | ID | Система | Баг | Серйозність | Автотест |
 |---|---|---|---|---|
-| [BUG-01](#bug-01) | api | POST /booking without required fields returns 400 — фактично: 500 | Major | `tests/api/booking.spec.ts:161` |
-| [BUG-02](#bug-02) | api | POST /booking with non-numeric totalprice returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:161` |
-| [BUG-03](#bug-03) | api | POST /booking with an invalid date returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:161` |
-| [BUG-04](#bug-04) | api | POST /booking with checkout before checkin returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:161` |
-| [BUG-05](#bug-05) | ui | overview step cannot be opened by URL without customer info — фактично: "https://www.saucedemo.com/checkout-step-two.html" | Major | `tests/ui/checkout.spec.ts:70` |
-| [BUG-06](#bug-06) | ui | order cannot be placed with an empty cart — фактично: "https://www.saucedemo.com/checkout-step-one.html" | Major | `tests/ui/checkout.spec.ts:98` |
-| [BUG-07](#bug-07) | api | POST /booking with negative totalprice returns 400 — фактично: 200 | Medium | `tests/api/booking.spec.ts:161` |
-| [BUG-08](#bug-08) | api | POST /auth with wrong password returns 401 and no token — фактично: 200 | Medium | `tests/api/booking.spec.ts:69` |
-| [BUG-09](#bug-09) | ui | Reset App State clears the cart and restores Add to cart buttons — фактично: element(s) not found | Medium | `tests/ui/cart.spec.ts:25` |
-| [BUG-10](#bug-10) | ui | whitespace-only customer info is rejected — фактично: "https://www.saucedemo.com/checkout-step-two.html" | Medium | `tests/ui/checkout.spec.ts:42` |
-| [BUG-11](#bug-11) | api | PUT and DELETE for a non-existent id return 404 — фактично: 405 | Minor | `tests/api/booking.spec.ts:106` |
+| [BUG-f00a33](#bug-f00a33) | api | POST /booking without required fields returns 400 — фактично: 500 | Major | `tests/api/booking.spec.ts:176` |
+| [BUG-598b8a](#bug-598b8a) | api | POST /booking with non-numeric totalprice returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:176` |
+| [BUG-eb1976](#bug-eb1976) | api | POST /booking with an invalid date returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:176` |
+| [BUG-91269a](#bug-91269a) | api | POST /booking with checkout before checkin returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:176` |
+| [BUG-7c0c87](#bug-7c0c87) | ui | overview step cannot be opened by URL without customer info — фактично: "https://www.saucedemo.com/checkout-step-two.html" | Major | `tests/ui/checkout.spec.ts:108` |
+| [BUG-2fa734](#bug-2fa734) | ui | order cannot be placed with an empty cart — фактично: "https://www.saucedemo.com/checkout-step-one.html" | Major | `tests/ui/checkout.spec.ts:136` |
+| [BUG-15d5e8](#bug-15d5e8) | api | POST /booking with negative totalprice returns 400 — фактично: 200 | Medium | `tests/api/booking.spec.ts:176` |
+| [BUG-f7d540](#bug-f7d540) | api | POST /auth with wrong password returns 401 and no token — фактично: 200 | Medium | `tests/api/booking.spec.ts:69` |
+| [BUG-82f33b](#bug-82f33b) | ui | Reset App State clears the cart and restores Add to cart buttons — фактично: element(s) not found | Medium | `tests/ui/cart.spec.ts:42` |
+| [BUG-88f0ad](#bug-88f0ad) | ui | whitespace-only customer info is rejected — фактично: "https://www.saucedemo.com/checkout-step-two.html" | Medium | `tests/ui/checkout.spec.ts:80` |
+| [BUG-4a5d2e](#bug-4a5d2e) | api | PUT and DELETE for a non-existent id return 404 — фактично: 405 | Minor | `tests/api/booking.spec.ts:121` |
 
 ---
 
-### BUG-01
+### BUG-f00a33
 **POST /booking without required fields returns 400 — фактично: 500**
 
 | | |
 |---|---|
 | Серйозність | Major |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:161` › POST /booking without required fields returns 400 |
+| Автотест | `tests/api/booking.spec.ts:176` › POST /booking without required fields returns 400 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -57,18 +57,18 @@ Received: 500
 
 </details>
 
-**Вкладення:** `test-results/api-booking-Booking-API-va-3da86-required-fields-returns-400-api/trace.zip`
+**Вкладення:** trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
 
 ---
 
-### BUG-02
+### BUG-598b8a
 **POST /booking with non-numeric totalprice returns 400 — фактично: 200**
 
 | | |
 |---|---|
 | Серйозність | Major |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:161` › POST /booking with non-numeric totalprice returns 400 |
+| Автотест | `tests/api/booking.spec.ts:176` › POST /booking with non-numeric totalprice returns 400 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -94,18 +94,18 @@ Received: 200
 
 </details>
 
-**Вкладення:** `test-results/api-booking-Booking-API-va-256fd-eric-totalprice-returns-400-api/trace.zip`
+**Вкладення:** trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
 
 ---
 
-### BUG-03
+### BUG-eb1976
 **POST /booking with an invalid date returns 400 — фактично: 200**
 
 | | |
 |---|---|
 | Серйозність | Major |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:161` › POST /booking with an invalid date returns 400 |
+| Автотест | `tests/api/booking.spec.ts:176` › POST /booking with an invalid date returns 400 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -131,18 +131,18 @@ Received: 200
 
 </details>
 
-**Вкладення:** `test-results/api-booking-Booking-API-va-31c0f-an-invalid-date-returns-400-api/trace.zip`
+**Вкладення:** trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
 
 ---
 
-### BUG-04
+### BUG-91269a
 **POST /booking with checkout before checkin returns 400 — фактично: 200**
 
 | | |
 |---|---|
 | Серйозність | Major |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:161` › POST /booking with checkout before checkin returns 400 |
+| Автотест | `tests/api/booking.spec.ts:176` › POST /booking with checkout before checkin returns 400 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -168,11 +168,11 @@ Received: 200
 
 </details>
 
-**Вкладення:** `test-results/api-booking-Booking-API-va-cd407--before-checkin-returns-400-api/trace.zip`
+**Вкладення:** trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
 
 ---
 
-### BUG-05
+### BUG-7c0c87
 **overview step cannot be opened by URL without customer info — фактично: "https://www.saucedemo.com/checkout-step-two.html"**
 
 | | |
@@ -180,7 +180,7 @@ Received: 200
 | Серйозність | Major |
 | Система | https://www.saucedemo.com |
 | Браузер | chromium |
-| Автотест | `tests/ui/checkout.spec.ts:70` › overview step cannot be opened by URL without customer info |
+| Автотест | `tests/ui/checkout.spec.ts:108` › overview step cannot be opened by URL without customer info |
 | Спроб | 1 (впав у всіх) |
 
 **Передумова:** Залогінений `standard_user`, у кошику Sauce Labs Backpack, дані покупця не вводились.
@@ -215,11 +215,11 @@ Call log:
 
 </details>
 
-**Вкладення:** `test-results/ui-checkout-Checkout-step--fa54b-hout-customer-info-negative-ui/test-failed-1.png`, `test-results/ui-checkout-Checkout-step--fa54b-hout-customer-info-negative-ui/trace.zip`
+**Вкладення:** скриншот і trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
 
 ---
 
-### BUG-06
+### BUG-2fa734
 **order cannot be placed with an empty cart — фактично: "https://www.saucedemo.com/checkout-step-one.html"**
 
 | | |
@@ -227,7 +227,7 @@ Call log:
 | Серйозність | Major |
 | Система | https://www.saucedemo.com |
 | Браузер | chromium |
-| Автотест | `tests/ui/checkout.spec.ts:98` › order cannot be placed with an empty cart |
+| Автотест | `tests/ui/checkout.spec.ts:136` › order cannot be placed with an empty cart |
 | Спроб | 1 (впав у всіх) |
 
 **Передумова:** Залогінений `standard_user`, кошик порожній.
@@ -262,18 +262,18 @@ Call log:
 
 </details>
 
-**Вкладення:** `test-results/ui-checkout-Checkout-with--715ed-with-an-empty-cart-negative-ui/test-failed-1.png`, `test-results/ui-checkout-Checkout-with--715ed-with-an-empty-cart-negative-ui/trace.zip`
+**Вкладення:** скриншот і trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
 
 ---
 
-### BUG-07
+### BUG-15d5e8
 **POST /booking with negative totalprice returns 400 — фактично: 200**
 
 | | |
 |---|---|
 | Серйозність | Medium |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:161` › POST /booking with negative totalprice returns 400 |
+| Автотест | `tests/api/booking.spec.ts:176` › POST /booking with negative totalprice returns 400 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -299,11 +299,11 @@ Received: 200
 
 </details>
 
-**Вкладення:** `test-results/api-booking-Booking-API-va-aa08b-tive-totalprice-returns-400-api/trace.zip`
+**Вкладення:** trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
 
 ---
 
-### BUG-08
+### BUG-f7d540
 **POST /auth with wrong password returns 401 and no token — фактично: 200**
 
 | | |
@@ -336,11 +336,11 @@ Received: 200
 
 </details>
 
-**Вкладення:** `test-results/api-booking-Booking-API-ne-f83f5-rd-returns-401-and-no-token-api/trace.zip`
+**Вкладення:** trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
 
 ---
 
-### BUG-09
+### BUG-82f33b
 **Reset App State clears the cart and restores Add to cart buttons — фактично: element(s) not found**
 
 | | |
@@ -348,7 +348,7 @@ Received: 200
 | Серйозність | Medium |
 | Система | https://www.saucedemo.com |
 | Браузер | chromium |
-| Автотест | `tests/ui/cart.spec.ts:25` › Reset App State clears the cart and restores Add to cart buttons |
+| Автотест | `tests/ui/cart.spec.ts:42` › Reset App State clears the cart and restores Add to cart buttons |
 | Спроб | 1 (впав у всіх) |
 
 **Передумова:** Залогінений `standard_user`, відкрито каталог.
@@ -383,11 +383,11 @@ Call log:
 
 </details>
 
-**Вкладення:** `test-results/ui-cart-Cart-Reset-App-Sta-6869b-estores-Add-to-cart-buttons-ui/test-failed-1.png`, `test-results/ui-cart-Cart-Reset-App-Sta-6869b-estores-Add-to-cart-buttons-ui/trace.zip`
+**Вкладення:** скриншот і trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
 
 ---
 
-### BUG-10
+### BUG-88f0ad
 **whitespace-only customer info is rejected — фактично: "https://www.saucedemo.com/checkout-step-two.html"**
 
 | | |
@@ -395,7 +395,7 @@ Call log:
 | Серйозність | Medium |
 | Система | https://www.saucedemo.com |
 | Браузер | chromium |
-| Автотест | `tests/ui/checkout.spec.ts:42` › whitespace-only customer info is rejected |
+| Автотест | `tests/ui/checkout.spec.ts:80` › whitespace-only customer info is rejected |
 | Спроб | 1 (впав у всіх) |
 
 **Передумова:** Залогінений `standard_user`, у кошику Sauce Labs Backpack і Sauce Labs Onesie, відкрито кошик.
@@ -430,18 +430,18 @@ Call log:
 
 </details>
 
-**Вкладення:** `test-results/ui-checkout-Checkout-white-50cfc-r-info-is-rejected-negative-ui/test-failed-1.png`, `test-results/ui-checkout-Checkout-white-50cfc-r-info-is-rejected-negative-ui/trace.zip`
+**Вкладення:** скриншот і trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
 
 ---
 
-### BUG-11
+### BUG-4a5d2e
 **PUT and DELETE for a non-existent id return 404 — фактично: 405**
 
 | | |
 |---|---|
 | Серйозність | Minor |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:106` › PUT and DELETE for a non-existent id return 404 |
+| Автотест | `tests/api/booking.spec.ts:121` › PUT and DELETE for a non-existent id return 404 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -476,4 +476,4 @@ Received: 405
 
 </details>
 
-**Вкладення:** `test-results/api-booking-Booking-API-ne-d2405--non-existent-id-return-404-api/trace.zip`
+**Вкладення:** trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.

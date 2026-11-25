@@ -7,7 +7,12 @@ const SOURCE = 'bug-reports/BUGS.md';
 const TARGET = 'BUGS.md';
 
 // Failing tests are expected while bugs exist — the exit code is not a reason to stop.
-const run = spawnSync('npx', ['playwright', 'test'], { stdio: 'inherit', shell: true });
+const run = spawnSync('npx', ['playwright', 'test'], {
+  stdio: 'inherit',
+  shell: true,
+  // Published copy is read on GitHub: local attachment paths would be dead links there.
+  env: { ...process.env, BUG_REPORT_PUBLISH: '1' },
+});
 
 if (!existsSync(SOURCE)) {
   console.error(`\n${SOURCE} was not generated (exit code ${run.status}). Nothing published.`);

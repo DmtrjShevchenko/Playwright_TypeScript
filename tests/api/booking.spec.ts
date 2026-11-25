@@ -82,26 +82,41 @@ test.describe('Booking API', () => {
       },
     );
 
-    test('PUT /booking/:id without token is forbidden and does not change data', async ({ bookingApi, token }) => {
-      const original = buildBooking();
-      const created: CreateBookingResponse = await (await bookingApi.createBooking(original)).json();
+    test(
+      'PUT /booking/:id without token is forbidden and does not change data',
+      { annotation: [{ type: 'severity', description: 'Critical' }] },
+      async ({ bookingApi, token }) => {
+        const original = buildBooking();
+        const created: CreateBookingResponse = await test.step('POST /booking — створити бронювання', async () =>
+          (await bookingApi.createBooking(original)).json(),
+        );
 
-      try {
-        const response = await bookingApi.updateBooking(created.bookingid, { ...original, firstname: 'Hacker' });
-        expect(response.status()).toBe(403);
+        try {
+          await test.step('PUT /booking/{id} без заголовка Cookie, з firstname "Hacker"', async () => {
+            const response = await bookingApi.updateBooking(created.bookingid, { ...original, firstname: 'Hacker' });
+            expect(response.status(), 'Зміна без токена заборонена → 403 Forbidden').toBe(403);
+          });
 
-        const current = await bookingApi.getBooking(created.bookingid);
-        expect(await current.json()).toEqual(original);
-      } finally {
-        await bookingApi.deleteBooking(created.bookingid, token);
-      }
-    });
+          await test.step('GET /booking/{id} — перевірити, що дані не змінились', async () => {
+            const current = await bookingApi.getBooking(created.bookingid);
+            expect(await current.json(), 'Бронювання лишилось без змін').toEqual(original);
+          });
+        } finally {
+          await bookingApi.deleteBooking(created.bookingid, token);
+        }
+      },
+    );
 
-    test('GET /booking/:id for a non-existent id returns 404', async ({ bookingApi }) => {
-      const response = await bookingApi.getBooking(NON_EXISTENT_ID);
-
-      expect(response.status()).toBe(404);
-    });
+    test(
+      'GET /booking/:id for a non-existent id returns 404',
+      { annotation: [{ type: 'severity', description: 'Minor' }] },
+      async ({ bookingApi }) => {
+        await test.step(`GET /booking/${NON_EXISTENT_ID}`, async () => {
+          const response = await bookingApi.getBooking(NON_EXISTENT_ID);
+          expect(response.status(), 'Неіснуюче бронювання → 404 Not Found').toBe(404);
+        });
+      },
+    );
 
     test(
       'PUT and DELETE for a non-existent id return 404',

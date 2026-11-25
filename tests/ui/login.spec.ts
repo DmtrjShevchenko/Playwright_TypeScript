@@ -1,29 +1,43 @@
 import { test, expect } from '../../src/fixtures/ui';
 import { ERRORS, PASSWORD, USERS } from '../../src/data/users';
 
+const severity = (description: string) => ({ annotation: [{ type: 'severity', description }] });
+
 test.describe('Login', () => {
   test.beforeEach(async ({ loginPage }) => {
     await loginPage.goto();
   });
 
-  test('standard_user logs in and lands on the catalog', async ({ loginPage, inventoryPage, page }) => {
-    await loginPage.login(USERS.standard, PASSWORD);
+  test('standard_user logs in and lands on the catalog', severity('Critical'), async ({ loginPage, inventoryPage, page }) => {
+    await test.step('Ввести standard_user / secret_sauce, натиснути Login', async () => {
+      await loginPage.login(USERS.standard, PASSWORD);
+    });
 
-    await expect(page).toHaveURL(/\/inventory\.html$/);
-    await expect(inventoryPage.header.title).toHaveText('Products');
+    await test.step('Перевірити, що відкрився каталог', async () => {
+      await expect(page, 'Після логіну відкривається каталог').toHaveURL(/\/inventory\.html$/);
+      await expect(inventoryPage.header.title, 'Заголовок сторінки — Products').toHaveText('Products');
+    });
   });
 
-  test('locked_out_user sees locked-out error @negative', async ({ loginPage, page }) => {
-    await loginPage.login(USERS.lockedOut, PASSWORD);
+  test('locked_out_user sees locked-out error @negative', severity('Critical'), async ({ loginPage, page }) => {
+    await test.step('Ввести locked_out_user / secret_sauce, натиснути Login', async () => {
+      await loginPage.login(USERS.lockedOut, PASSWORD);
+    });
 
-    await expect(loginPage.error).toHaveText(ERRORS.lockedOut);
-    await expect(page).not.toHaveURL(/inventory/);
+    await test.step('Перевірити, що доступ заборонено', async () => {
+      await expect(loginPage.error, 'Показано помилку про блокування').toHaveText(ERRORS.lockedOut);
+      await expect(page, 'Заблокований користувач не потрапляє в каталог').not.toHaveURL(/inventory/);
+    });
   });
 
-  test('wrong password is rejected @negative', async ({ loginPage, page }) => {
-    await loginPage.login(USERS.standard, 'wrong_password');
+  test('wrong password is rejected @negative', severity('Critical'), async ({ loginPage, page }) => {
+    await test.step('Ввести standard_user / wrong_password, натиснути Login', async () => {
+      await loginPage.login(USERS.standard, 'wrong_password');
+    });
 
-    await expect(loginPage.error).toHaveText(ERRORS.invalidCredentials);
-    await expect(page).not.toHaveURL(/inventory/);
+    await test.step('Перевірити, що доступ заборонено', async () => {
+      await expect(loginPage.error, 'Показано помилку про невірні облікові дані').toHaveText(ERRORS.invalidCredentials);
+      await expect(page, 'З невірним паролем користувач не потрапляє в каталог').not.toHaveURL(/inventory/);
+    });
   });
 });

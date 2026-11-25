@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { FullConfig, Reporter, Suite, TestCase, TestError, TestResult } from '@playwright/test/reporter';
@@ -25,6 +26,16 @@ const clean = (text = ''): string => text.replace(ANSI, '').trim();
 const stripTags = (title: string): string => title.replace(/\s+@[\w-]+/g, '').trim();
 const annotation = (test: TestCase, type: string): string | undefined =>
   test.annotations.find((a) => a.type === type)?.description;
+
+/**
+ * Stable id: the same test always yields the same BUG-xxxxxx across runs and machines
+ * (project + file relative to cwd + full title path; line numbers are deliberately excluded).
+ */
+function bugId(test: TestCase): string {
+  const file = path.relative(process.cwd(), test.location.file).replace(/\\/g, '/');
+  const key = [test.parent.project()?.name ?? '', file, ...test.titlePath().slice(3)].join(' › ');
+  return `BUG-${createHash('sha1').update(key).digest('hex').slice(0, 6)}`;
+}
 
 /**
  * A failed test is not automatically a product bug. These signatures point to the environment
@@ -152,12 +163,12 @@ export default class BugReportReporter implements Reporter {
     out.push('| ID | Система | Баг | Серйозність | Автотест |', '|---|---|---|---|---|');
     failed.forEach((test, i) => {
       out.push(
-        `| [BUG-${String(i + 1).padStart(2, '0')}](#bug-${String(i + 1).padStart(2, '0')}) | ${this.projectName(test)} | ${this.bugTitle(test)} | ${annotation(test, 'severity') ?? '—'} | \`${this.location(test)}\` |`,
+        `| [${bugId(test)}](#${bugId(test).toLowerCase()}) | ${this.projectName(test)} | ${this.bugTitle(test)} | ${annotation(test, 'severity') ?? '—'} | \`${this.location(test)}\` |`,
       );
     });
     out.push('');
 
-    failed.forEach((test, i) => out.push(...this.renderBug(test, `BUG-${String(i + 1).padStart(2, '0')}`)));
+    failed.forEach((test) => out.push(...this.renderBug(test, bugId(test))));
     return out.join('\n');
   }
 
@@ -211,9 +222,25 @@ export default class BugReportReporter implements Reporter {
     out.push('<details><summary>Помилка</summary>', '', '```', errors.map((e) => e.raw).join('\n\n').slice(0, 3000), '```', '', '</details>', '');
 
     const files = result.attachments.filter((a) => a.path && /screenshot|trace/.test(a.name));
-    if (files.length) {
-      out.push('**Вкладення:** ' + files.map((a) => `\`${path.relative(process.cwd(), a.path!).replace(/\\/g, '/')}\``).join(', '), '');
-    }
+    if (files.length) out.push(`**Вкладення:** ${this.attachmentsText(files)}`, '');
     return out;
+  }
+
+  /**
+   * Local paths only make sense on the machine that ran the tests:
+   * - CI run          → link to the run, files are in the `test-results` artifact;
+   * - published copy  → (BUG_REPORT_PUBLISH=1, see scripts/publish-bugs.mjs) explain where to get them;
+   * - local run       → real paths under test-results/.
+   */
+  private attachmentsText(files: TestResult['attachments']): string {
+    const kinds = [...new Set(files.map((a) => (a.name === 'trace' ? 'trace' : 'скриншот')))].join(' і ');
+    if (process.env.GITHUB_RUN_ID) {
+      const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+      return `${kinds} — в артефакті \`test-results\` [цього CI-прогону](${runUrl}).`;
+    }
+    if (process.env.BUG_REPORT_PUBLISH === '1') {
+      return `${kinds} — локально в \`test-results/\` після \`npm test\`, у CI — в артефакті \`test-results\` прогону.`;
+    }
+    return files.map((a) => `\`${path.relative(process.cwd(), a.path!).replace(/\\/g, '/')}\``).join(', ');
   }
 }

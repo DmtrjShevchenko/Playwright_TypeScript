@@ -3,6 +3,9 @@ import { CHECKOUT_INFO, PRODUCTS } from '../../src/data/products';
 import { ERRORS } from '../../src/data/users';
 import { toCents } from '../../src/utils/price';
 
+const CART_PRECONDITION =
+  'Залогінений `standard_user`, у кошику Sauce Labs Backpack і Sauce Labs Onesie, відкрито кошик.';
+
 test.describe('Checkout', () => {
   test.beforeEach(async ({ loggedIn }) => {
     await loggedIn.addToCart(PRODUCTS.backpack.name);
@@ -10,41 +13,76 @@ test.describe('Checkout', () => {
     await loggedIn.header.openCart();
   });
 
-  test('completes an order with correct totals', async ({ cartPage, checkoutPage, page }) => {
-    await cartPage.checkout();
-    await expect(page).toHaveURL(/checkout-step-one\.html$/);
+  test(
+    'completes an order with correct totals',
+    {
+      annotation: [
+        { type: 'severity', description: 'Critical' },
+        { type: 'precondition', description: CART_PRECONDITION },
+      ],
+    },
+    async ({ cartPage, checkoutPage, page }) => {
+      await test.step('Натиснути Checkout', async () => {
+        await cartPage.checkout();
+        await expect(page, 'Відкривається крок з даними покупця').toHaveURL(/checkout-step-one\.html$/);
+      });
 
-    await checkoutPage.fillInfo(CHECKOUT_INFO);
-    await expect(page).toHaveURL(/checkout-step-two\.html$/);
-    await expect(checkoutPage.itemNames).toHaveText([PRODUCTS.backpack.name, PRODUCTS.onesie.name]);
+      await test.step(`Ввести ${CHECKOUT_INFO.firstName} / ${CHECKOUT_INFO.lastName} / ${CHECKOUT_INFO.postalCode}, натиснути Continue`, async () => {
+        await checkoutPage.fillInfo(CHECKOUT_INFO);
+        await expect(page, 'Відкривається крок огляду замовлення').toHaveURL(/checkout-step-two\.html$/);
+        await expect(checkoutPage.itemNames, 'У замовленні обидва товари з кошика').toHaveText([
+          PRODUCTS.backpack.name,
+          PRODUCTS.onesie.name,
+        ]);
+      });
 
-    const summary = await checkoutPage.getSummary();
-    const expectedSubtotal = PRODUCTS.backpack.price + PRODUCTS.onesie.price;
-    expect(toCents(summary.subtotal)).toBe(toCents(expectedSubtotal));
-    expect(summary.tax).toBeGreaterThan(0);
-    expect(toCents(summary.total)).toBe(toCents(summary.subtotal + summary.tax));
+      await test.step('Перевірити суми замовлення', async () => {
+        const summary = await checkoutPage.getSummary();
+        const expectedSubtotal = PRODUCTS.backpack.price + PRODUCTS.onesie.price;
+        expect(toCents(summary.subtotal), 'Item total дорівнює сумі цін товарів (у центах)').toBe(toCents(expectedSubtotal));
+        expect(summary.tax, 'Податок нараховано').toBeGreaterThan(0);
+        expect(toCents(summary.total), 'Total = Item total + Tax (у центах)').toBe(toCents(summary.subtotal + summary.tax));
+      });
 
-    await checkoutPage.finish();
-    await expect(page).toHaveURL(/checkout-complete\.html$/);
-    await expect(checkoutPage.completeHeader).toHaveText('Thank you for your order!');
-    await expect(checkoutPage.header.cartBadge).toBeHidden();
-  });
+      await test.step('Натиснути Finish', async () => {
+        await checkoutPage.finish();
+        await expect(page, 'Відкривається сторінка підтвердження').toHaveURL(/checkout-complete\.html$/);
+        await expect(checkoutPage.completeHeader, 'Показано подяку за замовлення').toHaveText('Thank you for your order!');
+        await expect(checkoutPage.header.cartBadge, 'Кошик після замовлення порожній').toBeHidden();
+      });
+    },
+  );
 
-  test('cannot continue without postal code @negative', async ({ cartPage, checkoutPage, page }) => {
-    await cartPage.checkout();
+  test(
+    'cannot continue without postal code @negative',
+    {
+      annotation: [
+        { type: 'severity', description: 'Medium' },
+        { type: 'precondition', description: CART_PRECONDITION },
+      ],
+    },
+    async ({ cartPage, checkoutPage, page }) => {
+      await test.step('Натиснути Checkout', async () => {
+        await cartPage.checkout();
+      });
 
-    await checkoutPage.fillInfo({ firstName: CHECKOUT_INFO.firstName, lastName: CHECKOUT_INFO.lastName });
+      await test.step(`Ввести ${CHECKOUT_INFO.firstName} / ${CHECKOUT_INFO.lastName}, Postal Code лишити порожнім, натиснути Continue`, async () => {
+        await checkoutPage.fillInfo({ firstName: CHECKOUT_INFO.firstName, lastName: CHECKOUT_INFO.lastName });
+      });
 
-    await expect(checkoutPage.error).toHaveText(ERRORS.postalCodeRequired);
-    await expect(page).toHaveURL(/checkout-step-one\.html$/);
-  });
+      await test.step('Перевірити, що форма не пропускає без індексу', async () => {
+        await expect(checkoutPage.error, 'Показано помилку про обов\'язковий Postal Code').toHaveText(ERRORS.postalCodeRequired);
+        await expect(page, 'Користувач лишається на кроці введення даних').toHaveURL(/checkout-step-one\.html$/);
+      });
+    },
+  );
 
   test(
     'whitespace-only customer info is rejected @negative',
     {
       annotation: [
         { type: 'severity', description: 'Medium' },
-        { type: 'precondition', description: 'Залогінений `standard_user`, у кошику Sauce Labs Backpack і Sauce Labs Onesie, відкрито кошик.' },
+        { type: 'precondition', description: CART_PRECONDITION },
       ],
     },
     async ({ cartPage, checkoutPage, page }) => {
