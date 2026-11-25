@@ -13,7 +13,7 @@ test.describe('Login', () => {
     await expect(inventoryPage.header.title).toHaveText('Products');
   });
 
-  test('locked_out_user sees "locked out" error @negative', async ({ loginPage, page }) => {
+  test('locked_out_user sees locked-out error @negative', async ({ loginPage, page }) => {
     await loginPage.login(USERS.lockedOut, PASSWORD);
 
     await expect(loginPage.error).toHaveText(ERRORS.lockedOut);

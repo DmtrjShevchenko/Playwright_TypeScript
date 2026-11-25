@@ -3,7 +3,7 @@ import { ALL_PRODUCTS } from '../../src/data/products';
 import { SORT_OPTIONS } from '../../src/pages/InventoryPage';
 
 test.describe('Catalog', () => {
-  test('shows all 6 products with name, price and "Add to cart" button', async ({ loggedIn }) => {
+  test('shows all 6 products with name, price and Add to cart button', async ({ loggedIn }) => {
     await expect(loggedIn.items).toHaveCount(ALL_PRODUCTS.length);
 
     expect(await loggedIn.getNames()).toEqual(expect.arrayContaining(ALL_PRODUCTS.map((p) => p.name)));

@@ -3,7 +3,7 @@ import type { Booking, CreateBookingResponse } from '../../src/api/BookingApi';
 import { API_CREDENTIALS, buildBooking } from '../../src/data/bookings';
 
 test.describe('Booking API', () => {
-  test('auth -> create -> update -> delete -> booking is gone', async ({ bookingApi }) => {
+  test('auth, create, update, delete, then booking is gone', async ({ bookingApi }) => {
     const token = await test.step('POST /auth returns a token', async () => {
       const response = await bookingApi.createToken(API_CREDENTIALS.username, API_CREDENTIALS.password);
       expect(response.status()).toBe(200);
@@ -62,7 +62,7 @@ test.describe('Booking API', () => {
   });
 
   test.describe('negative @negative', () => {
-    test('POST /auth with wrong password returns "Bad credentials" and no token', async ({ bookingApi }) => {
+    test('POST /auth with wrong password returns Bad credentials and no token', async ({ bookingApi }) => {
       const response = await bookingApi.createToken(API_CREDENTIALS.username, 'wrong-password');
 
       // API responds 200 even for bad credentials — the failure is signalled in the body.

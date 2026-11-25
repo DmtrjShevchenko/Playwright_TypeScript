@@ -23,7 +23,9 @@ export default defineConfig({
   projects: [
     {
       name: 'ui',
-      testDir: './tests/ui',
+      // Projects share the top-level testDir and are split by testMatch (not per-project testDir):
+      // IntelliJ's Playwright runner otherwise resolves every file against the last project's testDir.
+      testMatch: 'ui/**/*.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
         headless,
@@ -35,7 +37,7 @@ export default defineConfig({
     },
     {
       name: 'api',
-      testDir: './tests/api',
+      testMatch: 'api/**/*.spec.ts',
       use: {
         baseURL: process.env.API_BASE_URL ?? 'https://restful-booker.herokuapp.com',
         extraHTTPHeaders: {
