@@ -2,9 +2,12 @@ import { defineConfig, devices } from '@playwright/test';
 
 const isCI = !!process.env.CI;
 // Locally the browser window is visible by default; CI always runs headless.
-// Override: HEADLESS=1 npm run test:ui   |   slow down actions: SLOWMO=500 npm run test:ui
+// Override: HEADLESS=1 npm run test:ui
 const headless = isCI || process.env.HEADLESS === '1';
-const slowMo = Number(process.env.SLOWMO ?? 0);
+// Manual (headed) runs are slowed down so a person can follow each action; headless/CI runs at full speed.
+// Override: SLOWMO=800 (slower) | SLOWMO=0 (off, even when headed)
+const DEFAULT_MANUAL_SLOWMO_MS = 300;
+const slowMo = Number(process.env.SLOWMO ?? (headless ? 0 : DEFAULT_MANUAL_SLOWMO_MS));
 
 export default defineConfig({
   testDir: './tests',

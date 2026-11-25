@@ -42,7 +42,7 @@ AI_WORKLOG.md  журнал роботи агента (у корені — на�
 | UI mode (покроково, time-travel) | `npm run test:watch` |
 | Один видимий браузер | `npm run test:headed` |
 | Без вікна браузера локально | `$env:HEADLESS='1'; npm run test:ui` (PowerShell) / `HEADLESS=1 npm run test:ui` (bash) |
-| Уповільнити дії, мс | `$env:SLOWMO='500'; npm run test:ui` |
+| Уповільнення дій, мс | ручний (headed) запуск — 300 мс за замовчуванням; `$env:SLOWMO='800'` — сильніше, `$env:SLOWMO='0'` — вимкнути. Headless і CI — без затримки |
 
 Локально UI-тести за замовчуванням **headed** (видно браузер), у CI (`CI=true`) — завжди headless.
 Агент, що запускає тести у фоні, має ставити `HEADLESS=1`, щоб не відкривати вікна користувачу.

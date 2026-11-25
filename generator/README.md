@@ -1,8 +1,15 @@
 # Бонус: конвеєр «тест-кейс текстом → Playwright-тест»
 
 ```bash
-node scripts/generate-test.mjs generator/cases/01-logout.md --fix 1
+npm run generate -- generator/cases/05-111.md --fix 1
+# або напряму
+node scripts/generate-test.mjs generator/cases/05-111.md --fix 1
 ```
+
+- **Шлях до кейсу** рахується від папки, з якої запущено команду; усе інше — від кореня проєкту. Тому скрипт працює з будь-якої папки, зокрема з IntelliJ (Run на `.mjs`-файлі запускає його з `scripts/`).
+- **Порядок аргументів** довільний: `--fix 1 generator/cases/05-111.md` теж працює.
+- **`--fix N`** — скільки разів після падіння передати помилку моделі на виправлення (за замовчуванням 1). **`--model`** — модель для `claude -p`.
+- **Потрібен** встановлений і залогінений Claude Code CLI (`claude`). Кожен запуск коштує ~$0.1–0.15.
 
 ## Як працює
 
@@ -38,6 +45,7 @@ node scripts/generate-test.mjs generator/cases/01-logout.md --fix 1
 | 2 | [Сортування за ціною від дорожчих](cases/02-sort-price-high-low.md) | ✅ пройшов | 1 | 16 с / $0.14 | Нічого |
 | 3 | [PATCH бронювання](cases/03-patch-booking.md) | ✅ пройшов | 1 | 10 с / $0.11 | Нічого |
 | 4 | [Чекаут з порожнім кошиком](cases/04-empty-cart-checkout.md) — кейс на **відомий баг** | ❌ падає, вердикт `possible product bug` | 2 | 14 с / $0.14 | Спеку прибрали з пулу тестів: вона дублює наявний тест `UI-CHK-04` |
+| 5 | [Замовлення з двох товарів із перевіркою сум](cases/05-111.md) — кейс, **написаний користувачем** | ✅ пройшов | 1 | 23 с / $0.16 | Винесли кнопку «Back Home» у `CheckoutPage.backHome()` (1 × `TODO(page-object)`) — [diff спеки](runs/05-111/manual-fix.diff). Модель правильно вгадала неочевидний `data-test="back-to-products"` у кнопки з написом «Back Home» |
 
 ### 1. Вихід із системи
 

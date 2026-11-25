@@ -1,0 +1,18 @@
+{
+  "case": "generator/cases/05-111.md",
+  "project": "ui",
+  "spec": "tests/ui/generated/05-111.spec.ts",
+  "model": "default",
+  "attempts": [
+    {
+      "attempt": 1,
+      "seconds": 23,
+      "costUsd": 0.16193459999999998,
+      "stage": "test",
+      "passed": true,
+      "pageObjectTodos": 1
+    }
+  ],
+  "passed": true,
+  "verdict": "passed"
+}

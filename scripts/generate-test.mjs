@@ -14,11 +14,16 @@
  * Everything (prompt, raw model answers, run logs, summary) is saved to generator/runs/<case>/ as evidence.
  */
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+const USAGE = 'Usage: node scripts/generate-test.mjs <case.md> [--fix <n>] [--model <model>]';
+const FLAGS_WITH_VALUE = new Set(['--fix', '--model']);
+
+// Positional argument = the first one that is neither a flag nor a flag's value (so `--fix 1 case.md` works too).
 const args = process.argv.slice(2);
-const casePath = args.find((a) => !a.startsWith('--'));
+const positional = args.filter((a, i) => !a.startsWith('--') && !FLAGS_WITH_VALUE.has(args[i - 1]));
 const flag = (name, fallback) => {
   const i = args.indexOf(`--${name}`);
   return i === -1 ? fallback : args[i + 1];
@@ -26,8 +31,19 @@ const flag = (name, fallback) => {
 const maxFixes = Number(flag('fix', '1'));
 const model = flag('model', undefined);
 
-if (!casePath) {
-  console.error('Usage: node scripts/generate-test.mjs <case.md> [--fix <n>] [--model <model>]');
+if (positional.length !== 1 || Number.isNaN(maxFixes)) {
+  console.error(USAGE);
+  process.exit(2);
+}
+
+// The case path is relative to where the user ran the command; everything else is relative to the project root.
+// IDEs (IntelliJ "Run" on a .mjs file) start the script with cwd = scripts/, so never rely on cwd.
+const casePath = path.resolve(positional[0]);
+const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+process.chdir(PROJECT_ROOT);
+
+if (!existsSync(casePath)) {
+  console.error(`Test case not found: ${casePath}\n${USAGE}`);
   process.exit(2);
 }
 
@@ -123,7 +139,7 @@ function check(attempt) {
   return { stage: 'test', ok: pw.ok, log: pw.output.slice(-4000) };
 }
 
-const summary = { case: casePath, project, spec: specRel, model: model ?? 'default', attempts: [] };
+const summary = { case: path.relative(PROJECT_ROOT, casePath).split(path.sep).join('/'), project, spec: specRel, model: model ?? 'default', attempts: [] };
 let input = prompt;
 let previousCode;
 let lastResult;

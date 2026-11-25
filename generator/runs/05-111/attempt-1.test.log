@@ -1,0 +1,5 @@
+Running 1 test using 1 worker
+
+  ok 1 [ui] › tests\ui\generated\05-111.spec.ts:12:3 › Checkout › two-item order shows correct items and totals and empties the cart after completion (1.0s)
+
+  1 passed (2.2s)

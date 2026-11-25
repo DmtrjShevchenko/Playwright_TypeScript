@@ -4,7 +4,7 @@
 
 | Файл | Система | Кейсів |
 |---|---|---|
-| [ui-saucedemo.md](ui-saucedemo.md) | UI — https://www.saucedemo.com | 15 (9 позитивних, 6 негативних; 2 згенеровані) |
+| [ui-saucedemo.md](ui-saucedemo.md) | UI — https://www.saucedemo.com | 16 (10 позитивних, 6 негативних; 3 згенеровані) |
 | [api-restful-booker.md](api-restful-booker.md) | API — https://restful-booker.herokuapp.com | 11 (2 позитивні, 9 негативних; 1 згенерований) |
 
 ## Умовні позначення
@@ -37,6 +37,7 @@
 | UI-CHK-03 | Чекаут з полями з самих пробілів | Негативний | P2 | ❌ | `tests/ui/checkout.spec.ts` › Checkout › whitespace-only customer info is rejected @negative |
 | UI-CHK-04 | Чекаут з порожнім кошиком | Негативний | P1 | ❌ | `tests/ui/checkout.spec.ts` › Checkout with an empty cart › order cannot be placed with an empty cart @negative |
 | UI-CHK-05 | Обхід кроку з даними покупця прямим URL | Негативний | P1 | ❌ | `tests/ui/checkout.spec.ts` › Checkout step order › overview step cannot be opened by URL without customer info @negative |
+| UI-CHK-06 | Замовлення з двох товарів із перевіркою сум і поверненням у каталог 🤖 | Позитивний | P1 | ✅ | `tests/ui/generated/05-111.spec.ts` › Checkout › two-item order shows correct items and totals and empties the cart after completion |
 | API-BOOK-01 | CRUD-флоу бронювання | Позитивний | P1 | ✅ | `tests/api/booking.spec.ts` › Booking API › auth, create, update, delete, then booking is gone |
 | API-BOOK-06 | Часткове оновлення бронювання (PATCH) 🤖 | Позитивний | P2 | ✅ | `tests/api/generated/03-patch-booking.spec.ts` › Booking API — PATCH › PATCH /booking/:id updates only the sent fields and keeps the rest unchanged |
 | API-AUTH-01 | Авторизація з невірним паролем | Негативний | P1 | ❌ | `tests/api/booking.spec.ts` › Booking API › negative › POST /auth with wrong password returns 401 and no token |

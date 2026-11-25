@@ -26,6 +26,7 @@ export class CheckoutPage {
   readonly finishButton: Locator;
   // Complete
   readonly completeHeader: Locator;
+  readonly backHomeButton: Locator;
 
   constructor(readonly page: Page) {
     this.header = new HeaderComponent(page);
@@ -41,6 +42,8 @@ export class CheckoutPage {
     this.totalLabel = page.getByTestId('total-label');
     this.finishButton = page.getByTestId('finish');
     this.completeHeader = page.getByTestId('complete-header');
+    // The button reads "Back Home", but its data-test is 'back-to-products'.
+    this.backHomeButton = page.getByTestId('back-to-products');
   }
 
   /** Opens the overview step directly by URL, bypassing the customer information step. */
@@ -66,5 +69,10 @@ export class CheckoutPage {
 
   async finish(): Promise<void> {
     await this.finishButton.click();
+  }
+
+  /** Completion page → "Back Home" returns to the catalog. */
+  async backHome(): Promise<void> {
+    await this.backHomeButton.click();
   }
 }

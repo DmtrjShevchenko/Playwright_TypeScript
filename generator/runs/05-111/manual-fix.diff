@@ -1,0 +1,12 @@
+--- generator/runs/05-111/attempt-1.spec.ts	2026-11-25 14:02:58.707243500 +0200
++++ tests/ui/generated/05-111.spec.ts	2026-11-25 14:10:47.778270800 +0200
+@@ -89,8 +89,7 @@
+       });
+ 
+       await test.step('Натиснути "Back Home"', async () => {
+-        // TODO(page-object): add backHomeButton locator and backHome() method to CheckoutPage
+-        await page.getByTestId('back-to-products').click();
++        await checkoutPage.backHome();
+         await expect(page, 'Відкривається каталог /inventory.html').toHaveURL(/\/inventory\.html$/);
+       });
+ 

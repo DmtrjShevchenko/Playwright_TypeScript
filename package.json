@@ -11,7 +11,8 @@
     "test:watch": "playwright test --ui",
     "report": "playwright show-report",
     "typecheck": "tsc --noEmit",
-    "bugs:publish": "node scripts/publish-bugs.mjs"
+    "bugs:publish": "node scripts/publish-bugs.mjs",
+    "generate": "node scripts/generate-test.mjs"
   },
   "keywords": [],
   "author": "",
