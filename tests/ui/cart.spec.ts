@@ -34,7 +34,7 @@ test.describe('Cart', () => {
 
   test(
     'Reset App State clears the cart and restores Add to cart buttons',
-    meta('Medium', 'Залогінений `standard_user`, відкрито каталог.'),
+    meta('Medium', 'Залогінений `standard_user`, відкрито каталог.', { knownBug: 'Received: "Remove"' }),
     async ({ loggedIn }) => {
       await test.step(`Додати в кошик ${backpack.name}`, async () => {
         await loggedIn.addToCart(backpack);

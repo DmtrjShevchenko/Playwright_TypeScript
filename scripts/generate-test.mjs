@@ -134,6 +134,7 @@ Turn the test case below into ONE spec file. It will be saved as \`${specRel}\`.
 - Import EVERYTHING from the single alias \`'@${project}'\` (see src/${project}.ts), e.g.
   \`import { test, expect, meta, ... } from '@${project}';\`. No relative imports, no '@playwright/test'.
 - Test details: \`test('<title>', meta('<Critical|Major|Medium|Minor>', '<precondition, UI only>'), async ({ ... }) => { ... })\`.
+  Never set \`knownBug\` in meta(): a human adds it only after a bug is confirmed from a real failure.
 - Reuse Page Object / API client methods and test data constants. Do not invent methods that do not exist.
   Page Object methods accept product objects: \`loggedIn.addToCart(PRODUCTS.backpack, PRODUCTS.onesie)\`.
 - Pages: \`expect(page).toHaveURL(PATHS.<page>)\`, never a hand-written URL regex.

@@ -2,21 +2,24 @@
 
 > Згенеровано автоматично з упалих автотестів (`src/reporters/bug-report.ts`) · 2026-11-25 · локальний прогін
 
-> Кожне падіння — це **кандидат** у баги. Падіння з ознаками проблеми оточення або самого тесту
-> (мережа, 502/503/504, таймаут, неоднозначний локатор, помилка в коді тесту) винесено в розділ «Потребує тріажу».
-> Решту людина підтверджує перед тим, як заводити баг у трекер.
+**Підсумок:** відомих багів підтверджено — 11 · нових падінь — 0 · потребує тріажу — 0 · можливо виправлено — 0 → **нічого нового, прогін зелений**
 
-## Баги
+> Тест на відомий баг перевіряє правильну поведінку й має сигнатуру бага (`meta(…, { knownBug })`).
+> Падіння зараховується як «відомий баг», лише якщо кожна помилка містить цю сигнатуру; інакше це нове падіння.
+> Падіння з ознаками проблеми оточення або тесту (мережа, 502/503/504, таймаут, неоднозначний локатор,
+> помилка в коді тесту) — у «Потребує тріажу». Нове падіння — **кандидат** у баги: його підтверджує людина.
+
+## Відомі баги (підтверджено в цьому прогоні)
 
 | ID | Система | Баг | Серйозність | Автотест |
 |---|---|---|---|---|
-| [BUG-f00a33](#bug-f00a33) | api | POST /booking without required fields returns 400 — фактично: 500 | Major | `tests/api/booking.spec.ts:127` |
-| [BUG-598b8a](#bug-598b8a) | api | POST /booking with non-numeric totalprice returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:127` |
-| [BUG-eb1976](#bug-eb1976) | api | POST /booking with an invalid date returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:127` |
-| [BUG-91269a](#bug-91269a) | api | POST /booking with checkout before checkin returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:127` |
+| [BUG-f00a33](#bug-f00a33) | api | POST /booking without required fields returns 400 — фактично: 500 | Major | `tests/api/booking.spec.ts:129` |
+| [BUG-598b8a](#bug-598b8a) | api | POST /booking with non-numeric totalprice returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:129` |
+| [BUG-eb1976](#bug-eb1976) | api | POST /booking with an invalid date returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:129` |
+| [BUG-91269a](#bug-91269a) | api | POST /booking with checkout before checkin returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:129` |
 | [BUG-7c0c87](#bug-7c0c87) | ui | overview step cannot be opened by URL without customer info — фактично: "https://www.saucedemo.com/checkout-step-two.html" | Major | `tests/ui/checkout.spec.ts:71` |
-| [BUG-2fa734](#bug-2fa734) | ui | order cannot be placed with an empty cart — фактично: "https://www.saucedemo.com/checkout-step-one.html" | Major | `tests/ui/checkout.spec.ts:91` |
-| [BUG-15d5e8](#bug-15d5e8) | api | POST /booking with negative totalprice returns 400 — фактично: 200 | Medium | `tests/api/booking.spec.ts:127` |
+| [BUG-2fa734](#bug-2fa734) | ui | order cannot be placed with an empty cart — фактично: "https://www.saucedemo.com/checkout-step-one.html" | Major | `tests/ui/checkout.spec.ts:93` |
+| [BUG-15d5e8](#bug-15d5e8) | api | POST /booking with negative totalprice returns 400 — фактично: 200 | Medium | `tests/api/booking.spec.ts:129` |
 | [BUG-f7d540](#bug-f7d540) | api | POST /auth with wrong password returns 401 and no token — фактично: 200 | Medium | `tests/api/booking.spec.ts:63` |
 | [BUG-82f33b](#bug-82f33b) | ui | Reset App State clears the cart and restores Add to cart buttons — фактично: "Remove" | Medium | `tests/ui/cart.spec.ts:35` |
 | [BUG-88f0ad](#bug-88f0ad) | ui | whitespace-only customer info is rejected — фактично: "https://www.saucedemo.com/checkout-step-two.html" | Medium | `tests/ui/checkout.spec.ts:54` |
@@ -30,8 +33,9 @@
 | | |
 |---|---|
 | Серйозність | Major |
+| Статус | відомий баг, сигнатура `Received: 500` підтверджена |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:127` › POST /booking without required fields returns 400 |
+| Автотест | `tests/api/booking.spec.ts:129` › POST /booking without required fields returns 400 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -69,8 +73,9 @@ Body:     Internal Server Error
 | | |
 |---|---|
 | Серйозність | Major |
+| Статус | відомий баг, сигнатура `Received: 200` підтверджена |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:127` › POST /booking with non-numeric totalprice returns 400 |
+| Автотест | `tests/api/booking.spec.ts:129` › POST /booking with non-numeric totalprice returns 400 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -93,7 +98,7 @@ expect(response).toHaveStatus(expected)
 Expected: 400
 Received: 200
 Request:  https://restful-booker.herokuapp.com/booking
-Body:     {"bookingid":2360,"booking":{"firstname":"Autotest","lastname":"PW-3cb24c01","totalprice":null,"depositpaid":true,"bookingdates":{"checkin":"2027-01-10","checkout":"2027-01-15"},"additionalneeds":"Breakfast"}}
+Body:     {"bookingid":7063,"booking":{"firstname":"Autotest","lastname":"PW-1e6856f5","totalprice":null,"depositpaid":true,"bookingdates":{"checkin":"2027-01-10","checkout":"2027-01-15"},"additionalneeds":"Breakfast"}}
 ```
 
 </details>
@@ -108,8 +113,9 @@ Body:     {"bookingid":2360,"booking":{"firstname":"Autotest","lastname":"PW-3cb
 | | |
 |---|---|
 | Серйозність | Major |
+| Статус | відомий баг, сигнатура `Received: 200` підтверджена |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:127` › POST /booking with an invalid date returns 400 |
+| Автотест | `tests/api/booking.spec.ts:129` › POST /booking with an invalid date returns 400 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -132,7 +138,7 @@ expect(response).toHaveStatus(expected)
 Expected: 400
 Received: 200
 Request:  https://restful-booker.herokuapp.com/booking
-Body:     {"bookingid":2356,"booking":{"firstname":"Autotest","lastname":"PW-ee510bb3","totalprice":150,"depositpaid":true,"bookingdates":{"checkin":"0NaN-aN-aN","checkout":"2027-01-10"},"additionalneeds":"Breakfast"}}
+Body:     {"bookingid":7060,"booking":{"firstname":"Autotest","lastname":"PW-1a64ec57","totalprice":150,"depositpaid":true,"bookingdates":{"checkin":"0NaN-aN-aN","checkout":"2027-01-10"},"additionalneeds":"Breakfast"}}
 ```
 
 </details>
@@ -147,8 +153,9 @@ Body:     {"bookingid":2356,"booking":{"firstname":"Autotest","lastname":"PW-ee5
 | | |
 |---|---|
 | Серйозність | Major |
+| Статус | відомий баг, сигнатура `Received: 200` підтверджена |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:127` › POST /booking with checkout before checkin returns 400 |
+| Автотест | `tests/api/booking.spec.ts:129` › POST /booking with checkout before checkin returns 400 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -171,7 +178,7 @@ expect(response).toHaveStatus(expected)
 Expected: 400
 Received: 200
 Request:  https://restful-booker.herokuapp.com/booking
-Body:     {"bookingid":2368,"booking":{"firstname":"Autotest","lastname":"PW-bf321e8a","totalprice":150,"depositpaid":true,"bookingdates":{"checkin":"2027-01-15","checkout":"2027-01-10"},"additionalneeds":"Breakfast"}}
+Body:     {"bookingid":7070,"booking":{"firstname":"Autotest","lastname":"PW-bb30e242","totalprice":150,"depositpaid":true,"bookingdates":{"checkin":"2027-01-15","checkout":"2027-01-10"},"additionalneeds":"Breakfast"}}
 ```
 
 </details>
@@ -186,6 +193,7 @@ Body:     {"bookingid":2368,"booking":{"firstname":"Autotest","lastname":"PW-bf3
 | | |
 |---|---|
 | Серйозність | Major |
+| Статус | відомий баг, сигнатура `checkout-step-two.html` підтверджена |
 | Система | https://www.saucedemo.com |
 | Браузер | chromium |
 | Автотест | `tests/ui/checkout.spec.ts:71` › overview step cannot be opened by URL without customer info |
@@ -233,9 +241,10 @@ Call log:
 | | |
 |---|---|
 | Серйозність | Major |
+| Статус | відомий баг, сигнатура `checkout-step-one.html` підтверджена |
 | Система | https://www.saucedemo.com |
 | Браузер | chromium |
-| Автотест | `tests/ui/checkout.spec.ts:91` › order cannot be placed with an empty cart |
+| Автотест | `tests/ui/checkout.spec.ts:93` › order cannot be placed with an empty cart |
 | Спроб | 1 (впав у всіх) |
 
 **Передумова:** Залогінений `standard_user`, кошик порожній.
@@ -280,8 +289,9 @@ Call log:
 | | |
 |---|---|
 | Серйозність | Medium |
+| Статус | відомий баг, сигнатура `Received: 200` підтверджена |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:127` › POST /booking with negative totalprice returns 400 |
+| Автотест | `tests/api/booking.spec.ts:129` › POST /booking with negative totalprice returns 400 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -304,7 +314,7 @@ expect(response).toHaveStatus(expected)
 Expected: 400
 Received: 200
 Request:  https://restful-booker.herokuapp.com/booking
-Body:     {"bookingid":2370,"booking":{"firstname":"Autotest","lastname":"PW-60ecddb9","totalprice":-100,"depositpaid":true,"bookingdates":{"checkin":"2027-01-10","checkout":"2027-01-15"},"additionalneeds":"Breakfast"}}
+Body:     {"bookingid":7064,"booking":{"firstname":"Autotest","lastname":"PW-08ffb8ef","totalprice":-100,"depositpaid":true,"bookingdates":{"checkin":"2027-01-10","checkout":"2027-01-15"},"additionalneeds":"Breakfast"}}
 ```
 
 </details>
@@ -319,6 +329,7 @@ Body:     {"bookingid":2370,"booking":{"firstname":"Autotest","lastname":"PW-60e
 | | |
 |---|---|
 | Серйозність | Medium |
+| Статус | відомий баг, сигнатура `Received: 200` підтверджена |
 | Система | https://restful-booker.herokuapp.com |
 | Автотест | `tests/api/booking.spec.ts:63` › POST /auth with wrong password returns 401 and no token |
 | Спроб | 1 (впав у всіх) |
@@ -358,6 +369,7 @@ Body:     {"reason":"Bad credentials"}
 | | |
 |---|---|
 | Серйозність | Medium |
+| Статус | відомий баг, сигнатура `Received: "Remove"` підтверджена |
 | Система | https://www.saucedemo.com |
 | Браузер | chromium |
 | Автотест | `tests/ui/cart.spec.ts:35` › Reset App State clears the cart and restores Add to cart buttons |
@@ -407,6 +419,7 @@ Call log:
 | | |
 |---|---|
 | Серйозність | Medium |
+| Статус | відомий баг, сигнатура `checkout-step-two.html` підтверджена |
 | Система | https://www.saucedemo.com |
 | Браузер | chromium |
 | Автотест | `tests/ui/checkout.spec.ts:54` › whitespace-only customer info is rejected |
@@ -454,6 +467,7 @@ Call log:
 | | |
 |---|---|
 | Серйозність | Minor |
+| Статус | відомий баг, сигнатура `Received: 405` підтверджена |
 | Система | https://restful-booker.herokuapp.com |
 | Автотест | `tests/api/booking.spec.ts:93` › PUT and DELETE for a non-existent id return 404 |
 | Спроб | 1 (впав у всіх) |

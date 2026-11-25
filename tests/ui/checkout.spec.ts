@@ -51,7 +51,7 @@ test.describe('Checkout', () => {
     });
   });
 
-  test('whitespace-only customer info is rejected @negative', meta('Medium', IN_CART), async ({ cartPage, checkoutPage, page }) => {
+  test('whitespace-only customer info is rejected @negative', meta('Medium', IN_CART, { knownBug: 'checkout-step-two.html' }), async ({ cartPage, checkoutPage, page }) => {
     await test.step('Натиснути Checkout', async () => {
       await cartPage.checkout();
     });
@@ -70,7 +70,9 @@ test.describe('Checkout', () => {
 test.describe('Checkout step order', () => {
   test(
     'overview step cannot be opened by URL without customer info @negative',
-    meta('Major', 'Залогінений `standard_user`, у кошику Sauce Labs Backpack, дані покупця не вводились.'),
+    meta('Major', 'Залогінений `standard_user`, у кошику Sauce Labs Backpack, дані покупця не вводились.', {
+      knownBug: 'checkout-step-two.html',
+    }),
     async ({ loggedIn, checkoutPage, page }) => {
       await test.step(`Додати в кошик ${backpack.name}`, async () => {
         await loggedIn.addToCart(backpack);
@@ -90,7 +92,7 @@ test.describe('Checkout step order', () => {
 test.describe('Checkout with an empty cart', () => {
   test(
     'order cannot be placed with an empty cart @negative',
-    meta('Major', 'Залогінений `standard_user`, кошик порожній.'),
+    meta('Major', 'Залогінений `standard_user`, кошик порожній.', { knownBug: 'checkout-step-one.html' }),
     async ({ loggedIn, cartPage, page }) => {
       await test.step('Відкрити кошик', async () => {
         await loggedIn.header.openCart();

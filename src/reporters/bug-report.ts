@@ -1,22 +1,32 @@
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import type { FullConfig, Reporter, Suite, TestCase, TestError, TestResult } from '@playwright/test/reporter';
+import type { FullConfig, FullResult, Reporter, Suite, TestCase, TestError, TestResult } from '@playwright/test/reporter';
 
 /**
- * Generates bug reports (Markdown) from failed tests.
+ * Generates bug reports (Markdown) from failed tests and decides whether the run is really red.
  *
  * - Steps        → titles of `test.step(...)` calls; the failed step is marked.
  * - Expected     → custom assertion message (`expect(x, '<expected behaviour>')`) + "Expected:" line of the error.
  * - Actual       → "Received:" line of the error.
- * - Severity     → annotation `{ type: 'severity', description: 'Major' }`.
- * - Precondition → annotation `{ type: 'precondition', description: '...' }`.
+ * - Severity / precondition / known bug → `meta(...)` annotations (src/support/meta.ts).
+ *
+ * Every failure is sorted into:
+ * - known bug, confirmed — the test has `knownBug: '<signature>'` and EVERY error contains the signature;
+ * - new failure          — anything else that is not an environment/test problem;
+ * - needs triage         — network, 502/503/504, test timeout, strict mode, error in test code…;
+ * plus "probably fixed"  — a test with `knownBug` that PASSED.
+ *
+ * Gate (option `gate`, on by default): if the only failures are confirmed known bugs, the run status is overridden
+ * to `passed` (exit code 0, CI green). New failures, triage items or probably-fixed bugs keep / make the run red.
  *
  * Only final outcomes count: a test that passed on retry (flaky) is not reported as a bug.
  * On GitHub Actions the same Markdown is appended to the job summary.
  */
 interface Options {
   outputFile?: string;
+  /** Override the run status by known-bug classification (default: true). */
+  gate?: boolean;
 }
 
 const ANSI = /\u001b\[[0-9;]*m/g;
@@ -55,6 +65,13 @@ function triageReason(test: TestCase): string | undefined {
   return TRIAGE_RULES.find((r) => r.pattern.test(text))?.reason;
 }
 
+/** The test failed exactly the way its known bug is described: every error contains the signature. */
+function knownBugConfirmed(test: TestCase): boolean {
+  const signature = annotation(test, 'known-bug');
+  const errors = test.results.at(-1)?.errors ?? [];
+  return !!signature && errors.length > 0 && errors.every((e) => clean(e.message ?? e.value).includes(signature));
+}
+
 interface ParsedError {
   message?: string;
   expected?: string;
@@ -80,11 +97,13 @@ function parseError(error: TestError): ParsedError {
 
 export default class BugReportReporter implements Reporter {
   private readonly outputFile: string;
+  private readonly gate: boolean;
   private config!: FullConfig;
   private suite!: Suite;
 
   constructor(options: Options = {}) {
     this.outputFile = options.outputFile ?? 'bug-reports/BUGS.md';
+    this.gate = options.gate ?? true;
   }
 
   printsToStdio(): boolean {
@@ -96,12 +115,12 @@ export default class BugReportReporter implements Reporter {
     this.suite = suite;
   }
 
-  onEnd(): void {
+  async onEnd(result: FullResult): Promise<{ status: FullResult['status'] } | void> {
+    const ran = this.suite.allTests().filter((t) => t.results.length > 0);
     // `--list` or an interrupted run executes nothing — keep the previous report.
-    if (!this.suite.allTests().some((t) => t.results.length > 0)) return;
+    if (ran.length === 0) return;
 
-    const failed = this.suite
-      .allTests()
+    const failed = ran
       .filter((t) => t.outcome() === 'unexpected')
       .sort((a, b) => {
         const sa = SEVERITY_ORDER.indexOf(annotation(a, 'severity') ?? '');
@@ -109,15 +128,32 @@ export default class BugReportReporter implements Reporter {
         return (sa === -1 ? 99 : sa) - (sb === -1 ? 99 : sb) || this.location(a).localeCompare(this.location(b));
       });
 
-    const bugs = failed.filter((t) => !triageReason(t));
     const triage = failed.filter((t) => triageReason(t));
+    const known = failed.filter((t) => !triageReason(t) && knownBugConfirmed(t));
+    const fresh = failed.filter((t) => !triageReason(t) && !knownBugConfirmed(t));
+    const fixed = ran.filter((t) => annotation(t, 'known-bug') && t.outcome() === 'expected');
 
-    const markdown = this.render(bugs, triage);
+    const markdown = this.render({ fresh, known, triage, fixed });
     fs.mkdirSync(path.dirname(this.outputFile), { recursive: true });
     fs.writeFileSync(this.outputFile, markdown, 'utf8');
     if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, markdown);
 
-    console.log(`\nBug reports: ${bugs.length}, needs triage: ${triage.length} → ${this.outputFile}`);
+    console.log(
+      `\nBug reports: known bugs confirmed ${known.length}, new failures ${fresh.length}, ` +
+        `needs triage ${triage.length}, probably fixed ${fixed.length} → ${this.outputFile}`,
+    );
+    if (!this.gate) return;
+
+    const attention = fresh.length + triage.length + fixed.length;
+    if (result.status === 'failed' && attention === 0) {
+      console.log(`Bug gate: all ${known.length} failure(s) are confirmed known bugs → run status overridden to "passed".`);
+      return { status: 'passed' };
+    }
+    if (result.status === 'passed' && fixed.length > 0) {
+      console.log(`Bug gate: ${fixed.length} known bug(s) no longer reproduce → run status overridden to "failed".`);
+      return { status: 'failed' };
+    }
+    if (attention > 0) console.log(`Bug gate: ${attention} item(s) need attention → run stays "${result.status}".`);
   }
 
   private location(test: TestCase): string {
@@ -125,7 +161,8 @@ export default class BugReportReporter implements Reporter {
     return `${file}:${test.location.line}`;
   }
 
-  private render(failed: TestCase[], triage: TestCase[]): string {
+  private render(groups: { fresh: TestCase[]; known: TestCase[]; triage: TestCase[]; fixed: TestCase[] }): string {
+    const { fresh, known, triage, fixed } = groups;
     const out: string[] = [];
     const runUrl = process.env.GITHUB_RUN_ID
       ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
@@ -138,12 +175,33 @@ export default class BugReportReporter implements Reporter {
       '',
     );
 
+    const attention = fresh.length + triage.length + fixed.length;
     out.push(
-      '> Кожне падіння — це **кандидат** у баги. Падіння з ознаками проблеми оточення або самого тесту',
-      '> (мережа, 502/503/504, таймаут, неоднозначний локатор, помилка в коді тесту) винесено в розділ «Потребує тріажу».',
-      '> Решту людина підтверджує перед тим, як заводити баг у трекер.',
+      `**Підсумок:** відомих багів підтверджено — ${known.length} · нових падінь — ${fresh.length} · ` +
+        `потребує тріажу — ${triage.length} · можливо виправлено — ${fixed.length} → ` +
+        (attention ? '**прогін червоний, потрібна увага**' : '**нічого нового, прогін зелений**'),
+      '',
+      '> Тест на відомий баг перевіряє правильну поведінку й має сигнатуру бага (`meta(…, { knownBug })`).',
+      '> Падіння зараховується як «відомий баг», лише якщо кожна помилка містить цю сигнатуру; інакше це нове падіння.',
+      '> Падіння з ознаками проблеми оточення або тесту (мережа, 502/503/504, таймаут, неоднозначний локатор,',
+      '> помилка в коді тесту) — у «Потребує тріажу». Нове падіння — **кандидат** у баги: його підтверджує людина.',
       '',
     );
+
+    const table = (tests: TestCase[]): void => {
+      out.push('| ID | Система | Баг | Серйозність | Автотест |', '|---|---|---|---|---|');
+      for (const test of tests) {
+        out.push(
+          `| [${bugId(test)}](#${bugId(test).toLowerCase()}) | ${this.projectName(test)} | ${this.bugTitle(test)} | ${annotation(test, 'severity') ?? '—'} | \`${this.location(test)}\` |`,
+        );
+      }
+      out.push('');
+    };
+
+    if (fresh.length) {
+      out.push('## 🆕 Нові падіння', '');
+      table(fresh);
+    }
 
     if (triage.length) {
       out.push('## Потребує тріажу', '', '| Автотест | Причина | Помилка |', '|---|---|---|');
@@ -154,21 +212,27 @@ export default class BugReportReporter implements Reporter {
       out.push('');
     }
 
-    if (failed.length === 0) {
-      out.push('Падінь, схожих на баги продукту, немає.', '');
-      return out.join('\n');
+    if (fixed.length) {
+      out.push(
+        '## ✅ Можливо виправлено',
+        '',
+        'Ці тести мають сигнатуру відомого бага, але пройшли. Перевір і, якщо баг справді виправлено, прибери `knownBug` з `meta()`.',
+        '',
+        '| ID | Тест | Сигнатура бага |',
+        '|---|---|---|',
+        ...fixed.map((t) => `| ${bugId(t)} | \`${this.location(t)}\` › ${stripTags(t.title)} | \`${annotation(t, 'known-bug')}\` |`),
+        '',
+      );
     }
 
-    out.push('## Баги', '');
-    out.push('| ID | Система | Баг | Серйозність | Автотест |', '|---|---|---|---|---|');
-    failed.forEach((test, i) => {
-      out.push(
-        `| [${bugId(test)}](#${bugId(test).toLowerCase()}) | ${this.projectName(test)} | ${this.bugTitle(test)} | ${annotation(test, 'severity') ?? '—'} | \`${this.location(test)}\` |`,
-      );
-    });
-    out.push('');
+    if (known.length) {
+      out.push('## Відомі баги (підтверджено в цьому прогоні)', '');
+      table(known);
+    }
 
-    failed.forEach((test) => out.push(...this.renderBug(test, bugId(test))));
+    if (fresh.length + known.length === 0) out.push('Падінь, схожих на баги продукту, немає.', '');
+
+    [...fresh, ...known].forEach((test) => out.push(...this.renderBug(test, bugId(test))));
     return out.join('\n');
   }
 
@@ -197,6 +261,15 @@ export default class BugReportReporter implements Reporter {
     out.push('---', '', `### ${id}`, `**${this.bugTitle(test)}**`, '');
     out.push('| | |', '|---|---|');
     out.push(`| Серйозність | ${annotation(test, 'severity') ?? 'не визначено'} |`);
+    out.push(
+      `| Статус | ${
+        knownBugConfirmed(test)
+          ? `відомий баг, сигнатура \`${annotation(test, 'known-bug')}\` підтверджена`
+          : annotation(test, 'known-bug')
+            ? `🆕 нове падіння: очікувалась сигнатура відомого бага \`${annotation(test, 'known-bug')}\`, але помилка інша`
+            : '🆕 нове падіння'
+      } |`,
+    );
     out.push(`| Система | ${project?.use.baseURL ?? '—'} |`);
     if (project?.use.browserName || project?.use.defaultBrowserType)
       out.push(`| Браузер | ${project.use.browserName ?? project.use.defaultBrowserType} |`);

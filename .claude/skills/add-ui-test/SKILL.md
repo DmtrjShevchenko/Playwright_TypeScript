@@ -51,6 +51,7 @@ description: Add or extend a Playwright UI test for SauceDemo (www.saucedemo.com
 ## Якщо тест знаходить баг
 - Тест лишається в загальній спеці своєї області й перевіряє **правильну** поведінку. Без `test.fail()` і без окремих `known-bugs`-спек.
 - Кроки — через `test.step('<дія користувача>')`, у ключових assertion — повідомлення з очікуваною поведінкою, severity і передумова — через `meta()`. З цього репортер збирає баг-репорт.
+- Коли баг підтверджено, додай сигнатуру: `meta('Medium', '<передумова>', { knownBug: 'Received: "Remove"' })`. Візьми її з реального звіту: формат `Received` залежить від матчера (`toHaveText` з regex-локатором пише `Received: "Remove"`, а не `Received string:`).
 - Перевіряй те, що показує застосунок, а не «чи видно очікуване»: `expect(loggedIn.cartButton(p)).toHaveText('Add to cart')` дасть у репорті «фактично: "Remove"», а `toBeVisible()` на кнопці «Add to cart» — лише «element(s) not found».
 
 ## Типові помилки агента (траплялися в цьому проєкті)

@@ -60,7 +60,7 @@ test.describe('Booking API', () => {
   });
 
   test.describe('negative @negative', () => {
-    test('POST /auth with wrong password returns 401 and no token', meta('Medium'), async ({ bookingApi }) => {
+    test('POST /auth with wrong password returns 401 and no token', meta('Medium', { knownBug: 'Received: 200' }), async ({ bookingApi }) => {
       const response = await test.step('POST /auth з username admin і невірним паролем', async () =>
         bookingApi.createToken(API_CREDENTIALS.username, 'wrong-password'),
       );
@@ -90,7 +90,7 @@ test.describe('Booking API', () => {
       });
     });
 
-    test('PUT and DELETE for a non-existent id return 404', meta('Minor'), async ({ bookingApi, token }) => {
+    test('PUT and DELETE for a non-existent id return 404', meta('Minor', { knownBug: 'Received: 405' }), async ({ bookingApi, token }) => {
       await test.step(`PUT /booking/${NON_EXISTENT_ID} з валідним тілом і токеном`, async () => {
         const response = await bookingApi.updateBooking(NON_EXISTENT_ID, buildBooking(), token);
         await expect.soft(response, 'Метод PUT підтримується; відсутній саме ресурс, тож коректна відповідь — 404 Not Found').toHaveStatus(404);
@@ -106,25 +106,27 @@ test.describe('Booking API', () => {
   test.describe('validation @negative', () => {
     const { firstname, ...withoutFirstname } = buildBooking();
     const cases = [
-      { title: 'without required fields', severity: 'Major', step: 'валідним бронюванням без поля firstname', payload: withoutFirstname },
-      { title: 'with non-numeric totalprice', severity: 'Major', step: '"totalprice": "abc"', payload: { ...buildBooking(), totalprice: 'abc' } },
+      { title: 'without required fields', severity: 'Major', knownBug: 'Received: 500', step: 'валідним бронюванням без поля firstname', payload: withoutFirstname },
+      { title: 'with non-numeric totalprice', severity: 'Major', knownBug: 'Received: 200', step: '"totalprice": "abc"', payload: { ...buildBooking(), totalprice: 'abc' } },
       {
         title: 'with an invalid date',
         severity: 'Major',
+        knownBug: 'Received: 200',
         step: 'невалідним "checkin": "2027-13-45" (checkout валідний: "2027-01-10")',
         payload: buildBooking({ bookingdates: { checkin: '2027-13-45', checkout: '2027-01-10' } }),
       },
       {
         title: 'with checkout before checkin',
         severity: 'Major',
+        knownBug: 'Received: 200',
         step: '"checkin": "2027-01-15", "checkout": "2027-01-10"',
         payload: buildBooking({ bookingdates: { checkin: '2027-01-15', checkout: '2027-01-10' } }),
       },
-      { title: 'with negative totalprice', severity: 'Medium', step: '"totalprice": -100', payload: buildBooking({ totalprice: -100 }) },
+      { title: 'with negative totalprice', severity: 'Medium', knownBug: 'Received: 200', step: '"totalprice": -100', payload: buildBooking({ totalprice: -100 }) },
     ] as const;
 
-    for (const { title, severity, step, payload } of cases) {
-      test(`POST /booking ${title} returns 400`, meta(severity), async ({ bookings }) => {
+    for (const { title, severity, knownBug, step, payload } of cases) {
+      test(`POST /booking ${title} returns 400`, meta(severity, { knownBug }), async ({ bookings }) => {
         // bookings.createRaw cleans up even if the API wrongly creates the booking.
         const response = await test.step(`POST /booking з ${step}`, async () => bookings.createRaw(payload));
 
