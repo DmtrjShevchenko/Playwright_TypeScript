@@ -2,7 +2,9 @@
 # Playwright
 node_modules/
 /test-results/
+/test-results-known-bugs/
 /playwright-report/
+/playwright-report-known-bugs/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/

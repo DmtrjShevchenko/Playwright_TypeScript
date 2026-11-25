@@ -9,6 +9,9 @@ const headless = isCI || process.env.HEADLESS === '1';
 const DEFAULT_MANUAL_SLOWMO_MS = 300;
 const slowMo = Number(process.env.SLOWMO ?? (headless ? 0 : DEFAULT_MANUAL_SLOWMO_MS));
 
+// Tests on known product bugs carry the tag `@known-bug` (set by `meta(…, { knownBug })`).
+// The regression run excludes them on the command line (`npm test` → `--grep-invert @known-bug`), not here,
+// so an IDE can still run a single known-bug test. They run separately: playwright.known-bugs.config.ts.
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
@@ -21,7 +24,7 @@ export default defineConfig({
     ['list'],
     ['html', { open: 'never' }],
     // Turns failed tests into Markdown bug reports (see src/reporters/bug-report.ts).
-    ['./src/reporters/bug-report.ts', { outputFile: 'bug-reports/BUGS.md' }],
+    ['./src/reporters/bug-report.ts', { outputFile: 'bug-reports/BUGS.md', title: 'Регресія: падіння' }],
   ],
   use: {
     trace: 'retain-on-failure',

@@ -30,15 +30,31 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Run Playwright tests (UI + API)
-        run: npx playwright test
+      # Must be green: every test except the ones on known bugs. Any red test here is a new problem.
+      - name: Regression (must be green)
+        run: npm test
 
-      - name: Upload HTML report
+      # Informational: tests on known product bugs (tag @known-bug) are red while the bug exists.
+      # Runs even when regression failed, never fails the job.
+      - name: Known bugs (informational)
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        run: npm run test:known-bugs
+
+      - name: Upload HTML report (regression)
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
           path: playwright-report/
+          retention-days: 14
+
+      - name: Upload HTML report (known bugs)
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-known-bugs
+          path: playwright-report-known-bugs/
           retention-days: 14
 
       - name: Upload bug reports
@@ -49,13 +65,14 @@ jobs:
           path: bug-reports/
           retention-days: 14
 
-      # Not `if: failure()`: when every failure is a confirmed known bug the run is green (bug gate in
-      # src/reporters/bug-report.ts), but the bug reports still point to these traces and screenshots.
+      # Not `if: failure()`: the known-bugs step never fails the job, but its bug reports point to these traces.
       - name: Upload traces / screenshots of failed tests
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: test-results
-          path: test-results/
+          path: |
+            test-results/
+            test-results-known-bugs/
           if-no-files-found: ignore
           retention-days: 7

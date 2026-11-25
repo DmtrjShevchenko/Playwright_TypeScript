@@ -4,7 +4,8 @@ import path from 'node:path';
 import type { FullConfig, FullResult, Reporter, Suite, TestCase, TestError, TestResult } from '@playwright/test/reporter';
 
 /**
- * Generates bug reports (Markdown) from failed tests and decides whether the run is really red.
+ * Generates bug reports (Markdown) from failed tests. It never changes the run status: Playwright's own
+ * result is the exit code. Known bugs are kept out of the regression run by the `@known-bug` tag instead.
  *
  * - Steps        → titles of `test.step(...)` calls; the failed step is marked.
  * - Expected     → custom assertion message (`expect(x, '<expected behaviour>')`) + "Expected:" line of the error.
@@ -17,16 +18,13 @@ import type { FullConfig, FullResult, Reporter, Suite, TestCase, TestError, Test
  * - needs triage         — network, 502/503/504, test timeout, strict mode, error in test code…;
  * plus "probably fixed"  — a test with `knownBug` that PASSED.
  *
- * Gate (option `gate`, on by default): if the only failures are confirmed known bugs, the run status is overridden
- * to `passed` (exit code 0, CI green). New failures, triage items or probably-fixed bugs keep / make the run red.
- *
  * Only final outcomes count: a test that passed on retry (flaky) is not reported as a bug.
  * On GitHub Actions the same Markdown is appended to the job summary.
  */
 interface Options {
   outputFile?: string;
-  /** Override the run status by known-bug classification (default: true). */
-  gate?: boolean;
+  /** First heading of the report (also used in the GitHub job summary, where both runs append). */
+  title?: string;
 }
 
 const ANSI = /\u001b\[[0-9;]*m/g;
@@ -97,13 +95,13 @@ function parseError(error: TestError): ParsedError {
 
 export default class BugReportReporter implements Reporter {
   private readonly outputFile: string;
-  private readonly gate: boolean;
+  private readonly title: string;
   private config!: FullConfig;
   private suite!: Suite;
 
   constructor(options: Options = {}) {
     this.outputFile = options.outputFile ?? 'bug-reports/BUGS.md';
-    this.gate = options.gate ?? true;
+    this.title = options.title ?? 'Баг-репорти';
   }
 
   printsToStdio(): boolean {
@@ -115,7 +113,7 @@ export default class BugReportReporter implements Reporter {
     this.suite = suite;
   }
 
-  async onEnd(result: FullResult): Promise<{ status: FullResult['status'] } | void> {
+  async onEnd(_result: FullResult): Promise<void> {
     const ran = this.suite.allTests().filter((t) => t.results.length > 0);
     // `--list` or an interrupted run executes nothing — keep the previous report.
     if (ran.length === 0) return;
@@ -142,18 +140,6 @@ export default class BugReportReporter implements Reporter {
       `\nBug reports: known bugs confirmed ${known.length}, new failures ${fresh.length}, ` +
         `needs triage ${triage.length}, probably fixed ${fixed.length} → ${this.outputFile}`,
     );
-    if (!this.gate) return;
-
-    const attention = fresh.length + triage.length + fixed.length;
-    if (result.status === 'failed' && attention === 0) {
-      console.log(`Bug gate: all ${known.length} failure(s) are confirmed known bugs → run status overridden to "passed".`);
-      return { status: 'passed' };
-    }
-    if (result.status === 'passed' && fixed.length > 0) {
-      console.log(`Bug gate: ${fixed.length} known bug(s) no longer reproduce → run status overridden to "failed".`);
-      return { status: 'failed' };
-    }
-    if (attention > 0) console.log(`Bug gate: ${attention} item(s) need attention → run stays "${result.status}".`);
   }
 
   private location(test: TestCase): string {
@@ -168,7 +154,7 @@ export default class BugReportReporter implements Reporter {
       ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
       : undefined;
 
-    out.push('# Баг-репорти', '');
+    out.push(`# ${this.title}`, '');
     out.push(
       `> Згенеровано автоматично з упалих автотестів (\`src/reporters/bug-report.ts\`) · ${new Date().toISOString().slice(0, 10)}` +
         (runUrl ? ` · [CI run](${runUrl})` : ' · локальний прогін'),
@@ -179,10 +165,11 @@ export default class BugReportReporter implements Reporter {
     out.push(
       `**Підсумок:** відомих багів підтверджено — ${known.length} · нових падінь — ${fresh.length} · ` +
         `потребує тріажу — ${triage.length} · можливо виправлено — ${fixed.length} → ` +
-        (attention ? '**прогін червоний, потрібна увага**' : '**нічого нового, прогін зелений**'),
+        (attention ? '**потрібна увага**' : '**нічого нового**'),
       '',
-      '> Тест на відомий баг перевіряє правильну поведінку й має сигнатуру бага (`meta(…, { knownBug })`).',
-      '> Падіння зараховується як «відомий баг», лише якщо кожна помилка містить цю сигнатуру; інакше це нове падіння.',
+      '> Тест на відомий баг перевіряє правильну поведінку, має тег `@known-bug` і сигнатуру бага (`meta(…, { knownBug })`).',
+      '> Такі тести не входять у регресійний прогін; їх запускає окремий неблокуючий прогін `npm run test:known-bugs`.',
+      '> Падіння зараховується як «відомий баг», лише якщо кожна помилка містить сигнатуру; інакше баг проявився по-іншому.',
       '> Падіння з ознаками проблеми оточення або тесту (мережа, 502/503/504, таймаут, неоднозначний локатор,',
       '> помилка в коді тесту) — у «Потребує тріажу». Нове падіння — **кандидат** у баги: його підтверджує людина.',
       '',
@@ -301,7 +288,7 @@ export default class BugReportReporter implements Reporter {
 
   /**
    * Local paths only make sense on the machine that ran the tests:
-   * - CI run          → link to the run, files are in the `test-results` artifact;
+   * - CI run          → link to the run, files are in the `test-results` artifact (both runs);
    * - published copy  → (BUG_REPORT_PUBLISH=1, see scripts/publish-bugs.mjs) explain where to get them;
    * - local run       → real paths under test-results/.
    */
@@ -312,7 +299,7 @@ export default class BugReportReporter implements Reporter {
       return `${kinds} — в артефакті \`test-results\` [цього CI-прогону](${runUrl}).`;
     }
     if (process.env.BUG_REPORT_PUBLISH === '1') {
-      return `${kinds} — локально в \`test-results/\` після \`npm test\`, у CI — в артефакті \`test-results\` прогону.`;
+      return `${kinds} — локально в \`test-results-known-bugs/\` після \`npm run test:known-bugs\`, у CI — в артефакті \`test-results\` прогону.`;
     }
     return files.map((a) => `\`${path.relative(process.cwd(), a.path!).replace(/\\/g, '/')}\``).join(', ');
   }

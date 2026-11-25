@@ -1,13 +1,13 @@
-// Runs the full suite and publishes the generated bug reports to /BUGS.md (committed copy for README).
+// Runs the known-bug tests (tag @known-bug) and publishes the generated bug reports to /BUGS.md (committed copy for README).
 // Usage: npm run bugs:publish
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync } from 'node:fs';
 
-const SOURCE = 'bug-reports/BUGS.md';
+const SOURCE = 'bug-reports/KNOWN-BUGS.md';
 const TARGET = 'BUGS.md';
 
 // Failing tests are expected while bugs exist — the exit code is not a reason to stop.
-const run = spawnSync('npx', ['playwright', 'test'], {
+const run = spawnSync('npx', ['playwright', 'test', '-c', 'playwright.known-bugs.config.ts'], {
   stdio: 'inherit',
   shell: true,
   // Published copy is read on GitHub: local attachment paths would be dead links there.

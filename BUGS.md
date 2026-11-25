@@ -1,11 +1,12 @@
-# Баг-репорти
+# Відомі баги
 
 > Згенеровано автоматично з упалих автотестів (`src/reporters/bug-report.ts`) · 2026-11-25 · локальний прогін
 
-**Підсумок:** відомих багів підтверджено — 11 · нових падінь — 0 · потребує тріажу — 0 · можливо виправлено — 0 → **нічого нового, прогін зелений**
+**Підсумок:** відомих багів підтверджено — 11 · нових падінь — 0 · потребує тріажу — 0 · можливо виправлено — 0 → **нічого нового**
 
-> Тест на відомий баг перевіряє правильну поведінку й має сигнатуру бага (`meta(…, { knownBug })`).
-> Падіння зараховується як «відомий баг», лише якщо кожна помилка містить цю сигнатуру; інакше це нове падіння.
+> Тест на відомий баг перевіряє правильну поведінку, має тег `@known-bug` і сигнатуру бага (`meta(…, { knownBug })`).
+> Такі тести не входять у регресійний прогін; їх запускає окремий неблокуючий прогін `npm run test:known-bugs`.
+> Падіння зараховується як «відомий баг», лише якщо кожна помилка містить сигнатуру; інакше баг проявився по-іншому.
 > Падіння з ознаками проблеми оточення або тесту (мережа, 502/503/504, таймаут, неоднозначний локатор,
 > помилка в коді тесту) — у «Потребує тріажу». Нове падіння — **кандидат** у баги: його підтверджує людина.
 
@@ -63,7 +64,7 @@ Body:     Internal Server Error
 
 </details>
 
-**Вкладення:** trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
+**Вкладення:** trace — локально в `test-results-known-bugs/` після `npm run test:known-bugs`, у CI — в артефакті `test-results` прогону.
 
 ---
 
@@ -98,12 +99,12 @@ expect(response).toHaveStatus(expected)
 Expected: 400
 Received: 200
 Request:  https://restful-booker.herokuapp.com/booking
-Body:     {"bookingid":7063,"booking":{"firstname":"Autotest","lastname":"PW-1e6856f5","totalprice":null,"depositpaid":true,"bookingdates":{"checkin":"2027-01-10","checkout":"2027-01-15"},"additionalneeds":"Breakfast"}}
+Body:     {"bookingid":624,"booking":{"firstname":"Autotest","lastname":"PW-e0b6567f","totalprice":null,"depositpaid":true,"bookingdates":{"checkin":"2027-01-10","checkout":"2027-01-15"},"additionalneeds":"Breakfast"}}
 ```
 
 </details>
 
-**Вкладення:** trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
+**Вкладення:** trace — локально в `test-results-known-bugs/` після `npm run test:known-bugs`, у CI — в артефакті `test-results` прогону.
 
 ---
 
@@ -138,12 +139,12 @@ expect(response).toHaveStatus(expected)
 Expected: 400
 Received: 200
 Request:  https://restful-booker.herokuapp.com/booking
-Body:     {"bookingid":7060,"booking":{"firstname":"Autotest","lastname":"PW-1a64ec57","totalprice":150,"depositpaid":true,"bookingdates":{"checkin":"0NaN-aN-aN","checkout":"2027-01-10"},"additionalneeds":"Breakfast"}}
+Body:     {"bookingid":632,"booking":{"firstname":"Autotest","lastname":"PW-0509f197","totalprice":150,"depositpaid":true,"bookingdates":{"checkin":"0NaN-aN-aN","checkout":"2027-01-10"},"additionalneeds":"Breakfast"}}
 ```
 
 </details>
 
-**Вкладення:** trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
+**Вкладення:** trace — локально в `test-results-known-bugs/` після `npm run test:known-bugs`, у CI — в артефакті `test-results` прогону.
 
 ---
 
@@ -178,12 +179,12 @@ expect(response).toHaveStatus(expected)
 Expected: 400
 Received: 200
 Request:  https://restful-booker.herokuapp.com/booking
-Body:     {"bookingid":7070,"booking":{"firstname":"Autotest","lastname":"PW-bb30e242","totalprice":150,"depositpaid":true,"bookingdates":{"checkin":"2027-01-15","checkout":"2027-01-10"},"additionalneeds":"Breakfast"}}
+Body:     {"bookingid":638,"booking":{"firstname":"Autotest","lastname":"PW-372bf0ad","totalprice":150,"depositpaid":true,"bookingdates":{"checkin":"2027-01-15","checkout":"2027-01-10"},"additionalneeds":"Breakfast"}}
 ```
 
 </details>
 
-**Вкладення:** trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
+**Вкладення:** trace — локально в `test-results-known-bugs/` після `npm run test:known-bugs`, у CI — в артефакті `test-results` прогону.
 
 ---
 
@@ -231,7 +232,7 @@ Call log:
 
 </details>
 
-**Вкладення:** скриншот і trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
+**Вкладення:** скриншот і trace — локально в `test-results-known-bugs/` після `npm run test:known-bugs`, у CI — в артефакті `test-results` прогону.
 
 ---
 
@@ -279,7 +280,7 @@ Call log:
 
 </details>
 
-**Вкладення:** скриншот і trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
+**Вкладення:** скриншот і trace — локально в `test-results-known-bugs/` після `npm run test:known-bugs`, у CI — в артефакті `test-results` прогону.
 
 ---
 
@@ -314,12 +315,12 @@ expect(response).toHaveStatus(expected)
 Expected: 400
 Received: 200
 Request:  https://restful-booker.herokuapp.com/booking
-Body:     {"bookingid":7064,"booking":{"firstname":"Autotest","lastname":"PW-08ffb8ef","totalprice":-100,"depositpaid":true,"bookingdates":{"checkin":"2027-01-10","checkout":"2027-01-15"},"additionalneeds":"Breakfast"}}
+Body:     {"bookingid":651,"booking":{"firstname":"Autotest","lastname":"PW-f05b1ec0","totalprice":-100,"depositpaid":true,"bookingdates":{"checkin":"2027-01-10","checkout":"2027-01-15"},"additionalneeds":"Breakfast"}}
 ```
 
 </details>
 
-**Вкладення:** trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
+**Вкладення:** trace — локально в `test-results-known-bugs/` після `npm run test:known-bugs`, у CI — в артефакті `test-results` прогону.
 
 ---
 
@@ -359,7 +360,7 @@ Body:     {"reason":"Bad credentials"}
 
 </details>
 
-**Вкладення:** trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
+**Вкладення:** trace — локально в `test-results-known-bugs/` після `npm run test:known-bugs`, у CI — в артефакті `test-results` прогону.
 
 ---
 
@@ -409,7 +410,7 @@ Call log:
 
 </details>
 
-**Вкладення:** скриншот і trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
+**Вкладення:** скриншот і trace — локально в `test-results-known-bugs/` після `npm run test:known-bugs`, у CI — в артефакті `test-results` прогону.
 
 ---
 
@@ -457,7 +458,7 @@ Call log:
 
 </details>
 
-**Вкладення:** скриншот і trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
+**Вкладення:** скриншот і trace — локально в `test-results-known-bugs/` після `npm run test:known-bugs`, у CI — в артефакті `test-results` прогону.
 
 ---
 
@@ -508,4 +509,4 @@ Body:     Method Not Allowed
 
 </details>
 
-**Вкладення:** trace — локально в `test-results/` після `npm test`, у CI — в артефакті `test-results` прогону.
+**Вкладення:** trace — локально в `test-results-known-bugs/` після `npm run test:known-bugs`, у CI — в артефакті `test-results` прогону.

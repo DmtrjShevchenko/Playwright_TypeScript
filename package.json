@@ -4,12 +4,15 @@
   "description": "UI (SauceDemo) and API (Restful Booker) autotests on Playwright + TypeScript",
   "private": true,
   "scripts": {
-    "test": "playwright test",
-    "test:ui": "playwright test --project=ui",
-    "test:api": "playwright test --project=api",
+    "test": "playwright test --grep-invert @known-bug",
+    "test:known-bugs": "playwright test -c playwright.known-bugs.config.ts",
+    "test:all": "playwright test",
+    "test:ui": "playwright test --project=ui --grep-invert @known-bug",
+    "test:api": "playwright test --project=api --grep-invert @known-bug",
     "test:headed": "playwright test --project=ui --headed --workers=1",
     "test:watch": "playwright test --ui",
     "report": "playwright show-report",
+    "report:known-bugs": "playwright show-report playwright-report-known-bugs",
     "typecheck": "tsc --noEmit",
     "bugs:publish": "node scripts/publish-bugs.mjs",
     "generate": "node scripts/generate-test.mjs"

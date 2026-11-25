@@ -9,10 +9,10 @@ export interface MetaOptions {
    * The test reveals a KNOWN product bug. Value = how the bug shows up in the failure: a substring of the assertion
    * error (usually its `Received` line), e.g. `'Received: 500'` or `'checkout-step-two.html'`.
    *
-   * The bug reporter then sorts every run into:
-   * - confirmed known bug — the test failed and EVERY error contains the signature → does not fail the run;
-   * - new failure — failed differently (other status, timeout, broken locator…) → fails the run;
-   * - probably fixed — the test passed → fails the run, so the bug gets closed and `knownBug` removed.
+   * The test also gets the tag `@known-bug`: the regression run (`npm test`, CI step "Regression") excludes it,
+   * the separate non-blocking run (`npm run test:known-bugs`) runs only such tests. In that run the bug reporter
+   * marks a failure as "confirmed" when every error contains the signature, otherwise as a changed failure,
+   * and a passed test as "probably fixed".
    */
   knownBug?: string;
 }
@@ -28,6 +28,7 @@ export interface MetaOptions {
 export function meta(severity: Severity, precondition?: string | MetaOptions, options: MetaOptions = {}): TestDetails {
   const opts: MetaOptions = typeof precondition === 'string' ? { ...options, precondition } : { ...precondition, ...options };
   return {
+    ...(opts.knownBug ? { tag: '@known-bug' } : {}),
     annotation: [
       { type: 'severity', description: severity },
       ...(opts.precondition ? [{ type: 'precondition', description: opts.precondition }] : []),
