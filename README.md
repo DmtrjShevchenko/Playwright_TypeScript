@@ -107,11 +107,11 @@ GitHub Actions (`.github/workflows/playwright.yml`) запускається н�
 - **Збереження сортування.** Після повернення зі сторінки товару (**Back to products**) сортування скидається на Name (A to Z). Невідомо, чи має воно зберігатися.
 
 ## Робота з AI-агентом
-Все, що стосується агента, лежить у [`.claude/`](.claude):
+Інструкції, скіли й промпти агента лежать у [`.claude/`](.claude), журнал роботи — у корені:
 - [`CLAUDE.md`](.claude/CLAUDE.md) — інструкції та правила проєкту
 - [`skills/`](.claude/skills) — скіли: `add-ui-test`, `add-api-test`, `debug-failing-test`
 - [`prompts/PROMPTS.md`](.claude/prompts/PROMPTS.md) — ключові промпти
-- [`AI_WORKLOG.md`](.claude/AI_WORKLOG.md) — журнал роботи агента
+- [`AI_WORKLOG.md`](AI_WORKLOG.md) — журнал роботи агента
 
 ### Де агент помилився і як це помітили
 

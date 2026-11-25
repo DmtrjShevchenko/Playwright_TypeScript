@@ -28,7 +28,7 @@ description: Add or extend a Playwright UI test for SauceDemo (www.saucedemo.com
    - Тільки web-first assertions, ніяких `waitForTimeout`.
 5. **Прожени**: `npm run typecheck && npx playwright test tests/ui/<file> --project=ui`.
    Для перевірки стабільності: `--repeat-each=3`.
-6. **Запиши** в `.claude/AI_WORKLOG.md`.
+6. **Запиши** в кореневий `AI_WORKLOG.md`.
 
 ## Чекліст перед завершенням
 - [ ] Локатори тільки в Page Objects

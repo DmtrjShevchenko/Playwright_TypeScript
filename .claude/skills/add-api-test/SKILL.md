@@ -28,7 +28,7 @@ description: Add or extend a Playwright API test for Restful Booker (restful-boo
 5. Тест, що створює бронювання, **сам його видаляє** (`try/finally` + `deleteBooking(id, token)`), якщо видалення не є частиною сценарію.
 6. Перевіряй **і статус, і тіло**, а для негативних — що дані не змінились (GET після невдалої зміни).
 7. Прожени: `npm run typecheck && npm run test:api`.
-8. Запиши в `.claude/AI_WORKLOG.md`.
+8. Запиши в кореневий `AI_WORKLOG.md`.
 
 ## Пастки
 - Сервер публічний і іноді повільний/перезапускається — не покладайся на чужі id.
