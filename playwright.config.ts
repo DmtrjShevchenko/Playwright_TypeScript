@@ -1,6 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const isCI = !!process.env.CI;
+// Locally the browser window is visible by default; CI always runs headless.
+// Override: HEADLESS=1 npm run test:ui   |   slow down actions: SLOWMO=500 npm run test:ui
+const headless = isCI || process.env.HEADLESS === '1';
+const slowMo = Number(process.env.SLOWMO ?? 0);
 
 export default defineConfig({
   testDir: './tests',
@@ -22,6 +26,8 @@ export default defineConfig({
       testDir: './tests/ui',
       use: {
         ...devices['Desktop Chrome'],
+        headless,
+        launchOptions: { slowMo },
         baseURL: process.env.UI_BASE_URL ?? 'https://www.saucedemo.com',
         // SauceDemo exposes stable `data-test` attributes on every interactive element.
         testIdAttribute: 'data-test',

@@ -31,6 +31,13 @@ tests/
 | Тільки UI / API | `npm run test:ui` / `npm run test:api` |
 | Тільки негативні | `npx playwright test --grep @negative` |
 | Перевірка типів | `npm run typecheck` |
+| UI mode (покроково, time-travel) | `npm run test:watch` |
+| Один видимий браузер | `npm run test:headed` |
+| Без вікна браузера локально | `$env:HEADLESS='1'; npm run test:ui` (PowerShell) / `HEADLESS=1 npm run test:ui` (bash) |
+| Уповільнити дії, мс | `$env:SLOWMO='500'; npm run test:ui` |
+
+Локально UI-тести за замовчуванням **headed** (видно браузер), у CI (`CI=true`) — завжди headless.
+Агент, що запускає тести у фоні, має ставити `HEADLESS=1`, щоб не відкривати вікна користувачу.
 | Звіт | `npm run report` |
 
 Після будь-якої зміни: `npm run typecheck` і прогін зачепленого project. Не завершуй задачу з червоними тестами — або полагодь, або явно напиши, що впало і чому.

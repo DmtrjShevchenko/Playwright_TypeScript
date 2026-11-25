@@ -17,7 +17,12 @@ npm run test:ui     # тільки UI
 npm run test:api    # тільки API
 npx playwright test --grep @negative
 npm run report      # HTML-звіт
+npm run test:watch  # Playwright UI mode
+npm run test:headed # один видимий браузер, тести по черзі
 ```
+
+Локально браузер **видно** за замовчуванням, у CI тести йдуть headless.
+Змінні оточення: `HEADLESS=1` ховає вікно, `SLOWMO=500` уповільнює кожну дію на 500 мс.
 
 ## CI
 GitHub Actions (`.github/workflows/playwright.yml`) запускається на кожен push і PR.

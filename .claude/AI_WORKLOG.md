@@ -5,6 +5,14 @@
 
 ---
 
+## 2026-11-25 · Візуалізація браузера
+
+- `playwright.config.ts`: project `ui` локально запускається headed, у CI — headless (`headless = CI || HEADLESS=1`). Додано `SLOWMO` (мс) через `launchOptions.slowMo`.
+- `package.json`: `test:headed` тепер з `--workers=1` (одне вікно, тести по черзі), додано `test:watch` (Playwright UI mode).
+- Перевірено: login.spec headed + `SLOWMO=300` — 3/3; `CI=1` project ui — 9/9 headless; typecheck ок.
+
+---
+
 ## 2026-11-25 · Перевірка GitHub Actions після публікації репозиторію
 
 - Репозиторій: https://github.com/DmtrjShevchenko/Playwright_TypeScript (гілка `master`).
