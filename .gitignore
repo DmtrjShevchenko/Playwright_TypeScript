@@ -16,3 +16,6 @@ node_modules/
 
 # Generated bug reports (published copy lives in /BUGS.md)
 /bug-reports/
+
+# Local task list
+/TODO.md
