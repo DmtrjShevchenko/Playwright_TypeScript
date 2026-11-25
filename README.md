@@ -7,6 +7,8 @@
 | UI | https://www.saucedemo.com (`standard_user`) | логін, каталог, сортування, кошик, чекаут + 3 негативні |
 | API | https://restful-booker.herokuapp.com | auth → create → update → delete → 404 + 3 негативні |
 
+Опис усіх тест-кейсів (кроки, очікувані результати, матриця покриття) — у [`test-cases/`](test-cases/README.md).
+
 ## Запуск
 
 ```bash
