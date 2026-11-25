@@ -21,10 +21,10 @@ npx playwright install chromium
 
 | Команда | Що робить |
 |---|---|
-| `npm test` | Усі тести (UI + API) |
+| `npm test` | Регресія: усі тести (UI + API), крім тестів на відомі баги. Має бути зеленою |
 | `npx playwright test --headed --workers=1` | Усі тести в одному видимому вікні, по черзі |
-| `npm run test:ui` | Тільки UI |
-| `npm run test:api` | Тільки API |
+| `npm run test:ui` | Тільки UI, без відомих багів |
+| `npm run test:api` | Тільки API, без відомих багів |
 | `npm run test:headed` | Тільки UI, одне видиме вікно, по черзі |
 | `npm run test:watch` | Playwright UI mode: список тестів, запуск по кліку, покроковий перегляд |
 | `npx playwright test --grep @negative` | Тільки негативні тести |
