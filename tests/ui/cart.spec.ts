@@ -61,10 +61,10 @@ test.describe('Cart', () => {
 
       await test.step('Перевірити стан кошика і кнопок на каталозі', async () => {
         await expect(loggedIn.header.cartBadge, 'Лічильник кошика зникає').toBeHidden();
-        await expect(
-          loggedIn.item(backpack.name).getByRole('button', { name: 'Add to cart' }),
-          `У ${backpack.name} знову кнопка Add to cart`,
-        ).toBeVisible({ timeout: 3_000 });
+        await expect(loggedIn.cartButton(backpack.name), `У ${backpack.name} знову кнопка Add to cart`).toHaveText(
+          'Add to cart',
+          { timeout: 3_000 },
+        );
       });
     },
   );

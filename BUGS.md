@@ -18,7 +18,7 @@
 | [BUG-2fa734](#bug-2fa734) | ui | order cannot be placed with an empty cart — фактично: "https://www.saucedemo.com/checkout-step-one.html" | Major | `tests/ui/checkout.spec.ts:136` |
 | [BUG-15d5e8](#bug-15d5e8) | api | POST /booking with negative totalprice returns 400 — фактично: 200 | Medium | `tests/api/booking.spec.ts:176` |
 | [BUG-f7d540](#bug-f7d540) | api | POST /auth with wrong password returns 401 and no token — фактично: 200 | Medium | `tests/api/booking.spec.ts:69` |
-| [BUG-82f33b](#bug-82f33b) | ui | Reset App State clears the cart and restores Add to cart buttons — фактично: element(s) not found | Medium | `tests/ui/cart.spec.ts:42` |
+| [BUG-82f33b](#bug-82f33b) | ui | Reset App State clears the cart and restores Add to cart buttons — фактично: "Remove" | Medium | `tests/ui/cart.spec.ts:42` |
 | [BUG-88f0ad](#bug-88f0ad) | ui | whitespace-only customer info is rejected — фактично: "https://www.saucedemo.com/checkout-step-two.html" | Medium | `tests/ui/checkout.spec.ts:80` |
 | [BUG-4a5d2e](#bug-4a5d2e) | api | PUT and DELETE for a non-existent id return 404 — фактично: 405 | Minor | `tests/api/booking.spec.ts:121` |
 
@@ -341,7 +341,7 @@ Received: 200
 ---
 
 ### BUG-82f33b
-**Reset App State clears the cart and restores Add to cart buttons — фактично: element(s) not found**
+**Reset App State clears the cart and restores Add to cart buttons — фактично: "Remove"**
 
 | | |
 |---|---|
@@ -359,26 +359,28 @@ Received: 200
 3. Перевірити стан кошика і кнопок на каталозі ❌
 
 **Очікуваний результат:**
-- У Sauce Labs Backpack знову кнопка Add to cart — Expected: visible
+- У Sauce Labs Backpack знову кнопка Add to cart — Expected: "Add to cart"
 
 **Фактичний результат:**
-- Received: element(s) not found
+- Received: "Remove"
 
 <details><summary>Помилка</summary>
 
 ```
 Error: У Sauce Labs Backpack знову кнопка Add to cart
 
-expect(locator).toBeVisible() failed
+expect(locator).toHaveText(expected) failed
 
-Locator: getByTestId('inventory-item').filter({ has: getByTestId('inventory-item-name').getByText('Sauce Labs Backpack', { exact: true }) }).getByRole('button', { name: 'Add to cart' })
-Expected: visible
-Timeout: 3000ms
-Error: element(s) not found
+Locator:  getByTestId('inventory-item').filter({ has: getByTestId('inventory-item-name').getByText('Sauce Labs Backpack', { exact: true }) }).getByRole('button', { name: /^(Add to cart|Remove)$/ })
+Expected: "Add to cart"
+Received: "Remove"
+Timeout:  3000ms
 
 Call log:
-  - У Sauce Labs Backpack знову кнопка Add to cart getByTestId('inventory-item').filter({ has: getByTestId('inventory-item-name').getByText('Sauce Labs Backpack', { exact: true }) }).getByRole('button', { name: 'Add to cart' }) with timeout 3000ms
-  - waiting for getByTestId('inventory-item').filter({ has: getByTestId('inventory-item-name').getByText('Sauce Labs Backpack', { exact: true }) }).getByRole('button', { name: 'Add to cart' })
+  - У Sauce Labs Backpack знову кнопка Add to cart getByTestId('inventory-item').filter({ has: getByTestId('inventory-item-name').getByText('Sauce Labs Backpack', { exact: true }) }).getByRole('button', { name: /^(Add to cart|Remove)$/ }) with timeout 3000ms
+  - waiting for getByTestId('inventory-item').filter({ has: getByTestId('inventory-item-name').getByText('Sauce Labs Backpack', { exact: true }) }).getByRole('button', { name: /^(Add to cart|Remove)$/ })
+    10 × locator resolved to <button id="remove-sauce-labs-backpack" name="remove-sauce-labs-backpack" data-test="remove-sauce-labs-backpack" class="btn btn_secondary btn_small btn_inventory ">Remove</button>
+       - unexpected value "Remove"
 ```
 
 </details>

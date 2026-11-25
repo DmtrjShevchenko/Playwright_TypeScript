@@ -1,18 +1,14 @@
 # Бонус: конвеєр «тест-кейс текстом → Playwright-тест»
 
-```bash
-# один кейс
-npm run generate -- generator/cases/05-111.md
-
-# пул кейсів
-npm run generate -- --all                                # усі кейси з generator/cases/
-npm run generate -- generator/cases                      # те саме: папка
-npm run generate -- "generator/cases/0*.md"              # шаблон (розгортає сам скрипт, працює і в PowerShell)
-npm run generate -- generator/cases/06-*.md generator/cases/07-*.md   # кілька файлів
-
-npm run generate -- --all --dry-run                      # що буде згенеровано, без викликів моделі
-npm run generate -- --all --force                        # перегенерувати й ті, для яких спека вже є
-```
+| Команда | Що робить |
+|---|---|
+| `npm run generate -- generator/cases/05-111.md` | Один кейс |
+| `npm run generate -- --all` | Усі кейси з `generator/cases/` |
+| `npm run generate -- generator/cases` | Те саме: папка |
+| `npm run generate -- "generator/cases/0*.md"` | Кейси за шаблоном (його розгортає сам скрипт, тому працює і в PowerShell, і в cmd) |
+| `npm run generate -- generator/cases/06-*.md generator/cases/07-*.md` | Кілька файлів |
+| `npm run generate -- --all --dry-run` | Що буде згенеровано, без викликів моделі |
+| `npm run generate -- --all --force` | Перегенерувати й ті кейси, для яких спека вже є |
 
 | Прапорець | Що робить |
 |---|---|

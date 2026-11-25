@@ -38,6 +38,14 @@ export class InventoryPage {
     await this.item(name).getByRole('button', { name: 'Add to cart' }).click();
   }
 
+  /**
+   * The cart button of a card, whatever it currently says ("Add to cart" or "Remove").
+   * Assert its text, so a failure reports what the button actually shows.
+   */
+  cartButton(name: string): Locator {
+    return this.item(name).getByRole('button', { name: /^(Add to cart|Remove)$/ });
+  }
+
   /** Opens the product details page by clicking the product name in its card. */
   async openItem(name: string): Promise<void> {
     await this.item(name).getByTestId('inventory-item-name').click();
