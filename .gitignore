@@ -10,3 +10,6 @@ node_modules/
 # Local
 .env
 .claude/settings.local.json
+
+# IDE
+.idea/

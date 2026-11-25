@@ -5,6 +5,16 @@
 
 ---
 
+## 2026-11-25 · Перевірка GitHub Actions після публікації репозиторію
+
+- Репозиторій: https://github.com/DmtrjShevchenko/Playwright_TypeScript (гілка `master`).
+- Перший run на push (`91f242c`): [45580304934](https://github.com/DmtrjShevchenko/Playwright_TypeScript/actions/runs/45580304934) — **success**.
+  Усі кроки зелені (install → typecheck → Chromium → tests → upload). Артефакт `playwright-report` (~200 KB) завантажено; `test-results` пропущено, бо падінь не було.
+- Змін у workflow не знадобилось. У README бейдж замінено на абсолютний URL, бо відносний шлях до картинки GitHub не рендерить.
+- Перевірено через публічний GitHub REST API (`gh` CLI локально не встановлений). Логи job'а вимагають авторизації, тому кількість пройдених тестів у CI видно тільки у звіті-артефакті.
+
+---
+
 ## 2026-11-25 · Початкове налаштування проєкту
 
 **Агент:** Claude Code (Claude Opus 5.5)

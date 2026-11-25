@@ -1,6 +1,6 @@
 # Playwright + TypeScript: SauceDemo UI & Restful Booker API
 
-[![Playwright Tests](../../actions/workflows/playwright.yml/badge.svg)](../../actions/workflows/playwright.yml)
+[![Playwright Tests](https://github.com/DmtrjShevchenko/Playwright_TypeScript/actions/workflows/playwright.yml/badge.svg)](https://github.com/DmtrjShevchenko/Playwright_TypeScript/actions/workflows/playwright.yml)
 
 | Набір | Ціль | Тести |
 |---|---|---|
