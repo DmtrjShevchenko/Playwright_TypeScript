@@ -14,18 +14,29 @@ description: Add or extend a Playwright UI test for SauceDemo (www.saucedemo.com
    `firstName`, `lastName`, `postalCode`, `continue`, `finish`, `subtotal-label`, `tax-label`, `total-label`, `complete-header`, `back-to-products`;
    сторінка товару: `inventory-item-name`, `inventory-item-desc`, `inventory-item-price`, `add-to-cart`, `remove` (ті самі `inventory-item-*`, що й у каталозі, тож спершу `ProductDetailsPage.waitForLoaded()`).
 3. **Якщо потрібного локатора/дії нема в Page Object — додай його туди** (`src/pages/*.ts`), а не в спеку.
-   Нова сторінка → новий клас у `src/pages/` + фікстура в `src/fixtures/ui.ts`.
+   Нова сторінка → новий клас у `src/pages/` + фікстура в `src/fixtures/ui.ts`; якщо її мають бачити генератор
+   і спеки — додай у `CONTEXT.ui` у `scripts/generate-test.mjs`.
 4. **Напиши тест** у відповідному файлі `tests/ui/<area>.spec.ts`:
    ```ts
-   import { test, expect } from '../../src/fixtures/ui';
+   import { test, expect, expectQuick, meta, PATHS, PRODUCTS } from '@ui';
 
-   test('<очікувана поведінка>', async ({ loggedIn, cartPage, page }) => {
-     await loggedIn.addToCart(PRODUCTS.backpack.name);
-     await expect(loggedIn.header.cartBadge).toHaveText('1');
+   test('<очікувана поведінка>', meta('Major', 'Залогінений standard_user, відкрито каталог.'), async ({ loggedIn, page }) => {
+     await test.step('Додати в кошик Sauce Labs Backpack', async () => {
+       await loggedIn.addToCart(PRODUCTS.backpack);
+       await expect(loggedIn.header.cartBadge, 'Лічильник кошика — 1').toHaveText('1');
+       await expect(loggedIn.cartButton(PRODUCTS.backpack), 'Кнопка змінилась на Remove').toHaveText('Remove');
+     });
+
+     await test.step('Відкрити кошик', async () => {
+       await loggedIn.header.openCart();
+       await expect(page, 'Відкривається кошик').toHaveURL(PATHS.cart);
+     });
    });
    ```
+   - **Усе — з `'@ui'`**: `test`, `expect`, `expectQuick`, `meta`, `PRODUCTS`, `CHECKOUT_INFO`, `USERS`, `PASSWORD`, `ERRORS`, `PATHS`, `SORT_OPTIONS`.
    - Для залогіненого стану — фікстура `loggedIn` (повертає `InventoryPage`).
-   - Дані — з `src/data/products.ts`, тексти помилок — з `ERRORS` у `src/data/users.ts`.
+   - Page Objects приймають сам товар і кілька товарів одразу: `addToCart(PRODUCTS.backpack, PRODUCTS.onesie)`.
+   - Сторінки — `PATHS.*`, гроші — `toEqualMoney`, «застосунок НЕ має перейти» — `expectQuick`.
    - Тільки web-first assertions, ніяких `waitForTimeout`.
 5. **Прожени**: `npm run typecheck && npx playwright test tests/ui/<file> --project=ui`.
    Для перевірки стабільності: `--repeat-each=3`.
@@ -39,7 +50,8 @@ description: Add or extend a Playwright UI test for SauceDemo (www.saucedemo.com
 
 ## Якщо тест знаходить баг
 - Тест лишається в загальній спеці своєї області й перевіряє **правильну** поведінку. Без `test.fail()` і без окремих `known-bugs`-спек.
-- Кроки — через `test.step('<дія користувача>')`, у ключових assertion — повідомлення з очікуваною поведінкою, анотації `severity` і `precondition`. З цього репортер збирає баг-репорт.
+- Кроки — через `test.step('<дія користувача>')`, у ключових assertion — повідомлення з очікуваною поведінкою, severity і передумова — через `meta()`. З цього репортер збирає баг-репорт.
+- Перевіряй те, що показує застосунок, а не «чи видно очікуване»: `expect(loggedIn.cartButton(p)).toHaveText('Add to cart')` дасть у репорті «фактично: "Remove"», а `toBeVisible()` на кнопці «Add to cart» — лише «element(s) not found».
 
 ## Типові помилки агента (траплялися в цьому проєкті)
 - **Неточний локатор кнопки в картці товару.** `getByRole('button')` усередині `inventory-item` знаходить ще й посилання-зображення та назву (у них `role="button"`) → strict mode violation. Завжди уточнюй ім'я: `getByRole('button', { name: 'Add to cart' })`.

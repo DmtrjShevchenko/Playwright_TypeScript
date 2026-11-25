@@ -82,8 +82,15 @@ if (cases.length === 0 || missing.length) {
 }
 
 // ---------- helpers ----------
+// The barrel (@ui / @api) goes first: it is what the spec imports from. Then helpers, Page Objects / API client,
+// data and one up-to-date spec as a style example.
 const CONTEXT = {
   ui: [
+    'src/ui.ts',
+    'src/support/meta.ts',
+    'src/support/matchers.ts',
+    'src/data/paths.ts',
+    'src/data/messages.ts',
     'src/pages/LoginPage.ts',
     'src/pages/HeaderComponent.ts',
     'src/pages/InventoryPage.ts',
@@ -93,9 +100,17 @@ const CONTEXT = {
     'src/fixtures/ui.ts',
     'src/data/users.ts',
     'src/data/products.ts',
-    'tests/ui/cart.spec.ts',
+    'tests/ui/checkout.spec.ts',
   ],
-  api: ['src/api/BookingApi.ts', 'src/fixtures/api.ts', 'src/data/bookings.ts', 'tests/api/booking.spec.ts'],
+  api: [
+    'src/api.ts',
+    'src/support/meta.ts',
+    'src/support/matchers.ts',
+    'src/api/BookingApi.ts',
+    'src/fixtures/api.ts',
+    'src/data/bookings.ts',
+    'tests/api/booking.spec.ts',
+  ],
 };
 
 const fileBlock = (p) => `--- ${p} ---\n${readFileSync(p, 'utf8')}`;
@@ -115,16 +130,23 @@ EXISTING CODE YOU MUST REUSE (do not redefine it):
 ${CONTEXT[project].map(fileBlock).join('\n\n')}
 
 TASK
-Turn the test case below into ONE spec file. It will be saved as \`${specRel}\`, so imports are relative to that location
-(e.g. \`import { test, expect } from '../../../src/fixtures/${project}';\`).
-- Import test/expect only from the project's fixtures file.
+Turn the test case below into ONE spec file. It will be saved as \`${specRel}\`.
+- Import EVERYTHING from the single alias \`'@${project}'\` (see src/${project}.ts), e.g.
+  \`import { test, expect, meta, ... } from '@${project}';\`. No relative imports, no '@playwright/test'.
+- Test details: \`test('<title>', meta('<Critical|Major|Medium|Minor>', '<precondition, UI only>'), async ({ ... }) => { ... })\`.
 - Reuse Page Object / API client methods and test data constants. Do not invent methods that do not exist.
+  Page Object methods accept product objects: \`loggedIn.addToCart(PRODUCTS.backpack, PRODUCTS.onesie)\`.
+- Pages: \`expect(page).toHaveURL(PATHS.<page>)\`, never a hand-written URL regex.
+- Money: \`expect(amount, '<expected>').toEqualMoney(<number>)\`, never toCents by hand.
+- API status: \`await expect(response, '<expected>').toHaveStatus(<code>)\`, never \`response.status()\`.
+- "The app must NOT go/do X" checks: \`expectQuick(...)\` (short timeout) instead of \`expect(..., { timeout })\`.
 - If an action has no Page Object method, use a locator inline (prefer getByTestId / getByRole) and put the comment
   \`// TODO(page-object): <what to add>\` on the line above it.
 - Every step of the case → one \`test.step('<step text in Ukrainian>')\`. Key assertions get a message with the expected
-  behaviour: \`expect(x, '<expected>')\`. Add annotations \`severity\` and (for UI) \`precondition\`.
+  behaviour: \`expect(x, '<expected>')\`.
 - The test asserts the CORRECT behaviour from "Очікуваний результат". Never weaken it to match a possible bug.
-- API tests clean up everything they create in \`finally\`.
+- API: create bookings through the \`bookings\` fixture (\`bookings.create(overrides)\`, \`bookings.createRaw(payload)\`):
+  it deletes them after the test, so no try/finally.
 - Answer with exactly one \`\`\`ts code block and nothing else.
 
 TEST CASE:

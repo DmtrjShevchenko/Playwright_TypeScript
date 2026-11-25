@@ -1,5 +1,6 @@
 import { type Locator, type Page } from '@playwright/test';
 import { HeaderComponent } from './HeaderComponent';
+import { nameOf, type ProductRef } from '../data/products';
 
 export class CartPage {
   readonly header: HeaderComponent;
@@ -14,8 +15,8 @@ export class CartPage {
     this.checkoutButton = page.getByTestId('checkout');
   }
 
-  async removeItem(name: string): Promise<void> {
-    await this.items.filter({ hasText: name }).getByRole('button', { name: 'Remove' }).click();
+  async removeItem(product: ProductRef): Promise<void> {
+    await this.items.filter({ hasText: nameOf(product) }).getByRole('button', { name: 'Remove' }).click();
   }
 
   async checkout(): Promise<void> {

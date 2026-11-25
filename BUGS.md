@@ -10,17 +10,17 @@
 
 | ID | Система | Баг | Серйозність | Автотест |
 |---|---|---|---|---|
-| [BUG-f00a33](#bug-f00a33) | api | POST /booking without required fields returns 400 — фактично: 500 | Major | `tests/api/booking.spec.ts:176` |
-| [BUG-598b8a](#bug-598b8a) | api | POST /booking with non-numeric totalprice returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:176` |
-| [BUG-eb1976](#bug-eb1976) | api | POST /booking with an invalid date returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:176` |
-| [BUG-91269a](#bug-91269a) | api | POST /booking with checkout before checkin returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:176` |
-| [BUG-7c0c87](#bug-7c0c87) | ui | overview step cannot be opened by URL without customer info — фактично: "https://www.saucedemo.com/checkout-step-two.html" | Major | `tests/ui/checkout.spec.ts:108` |
-| [BUG-2fa734](#bug-2fa734) | ui | order cannot be placed with an empty cart — фактично: "https://www.saucedemo.com/checkout-step-one.html" | Major | `tests/ui/checkout.spec.ts:136` |
-| [BUG-15d5e8](#bug-15d5e8) | api | POST /booking with negative totalprice returns 400 — фактично: 200 | Medium | `tests/api/booking.spec.ts:176` |
-| [BUG-f7d540](#bug-f7d540) | api | POST /auth with wrong password returns 401 and no token — фактично: 200 | Medium | `tests/api/booking.spec.ts:69` |
-| [BUG-82f33b](#bug-82f33b) | ui | Reset App State clears the cart and restores Add to cart buttons — фактично: "Remove" | Medium | `tests/ui/cart.spec.ts:42` |
-| [BUG-88f0ad](#bug-88f0ad) | ui | whitespace-only customer info is rejected — фактично: "https://www.saucedemo.com/checkout-step-two.html" | Medium | `tests/ui/checkout.spec.ts:80` |
-| [BUG-4a5d2e](#bug-4a5d2e) | api | PUT and DELETE for a non-existent id return 404 — фактично: 405 | Minor | `tests/api/booking.spec.ts:121` |
+| [BUG-f00a33](#bug-f00a33) | api | POST /booking without required fields returns 400 — фактично: 500 | Major | `tests/api/booking.spec.ts:127` |
+| [BUG-598b8a](#bug-598b8a) | api | POST /booking with non-numeric totalprice returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:127` |
+| [BUG-eb1976](#bug-eb1976) | api | POST /booking with an invalid date returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:127` |
+| [BUG-91269a](#bug-91269a) | api | POST /booking with checkout before checkin returns 400 — фактично: 200 | Major | `tests/api/booking.spec.ts:127` |
+| [BUG-7c0c87](#bug-7c0c87) | ui | overview step cannot be opened by URL without customer info — фактично: "https://www.saucedemo.com/checkout-step-two.html" | Major | `tests/ui/checkout.spec.ts:71` |
+| [BUG-2fa734](#bug-2fa734) | ui | order cannot be placed with an empty cart — фактично: "https://www.saucedemo.com/checkout-step-one.html" | Major | `tests/ui/checkout.spec.ts:91` |
+| [BUG-15d5e8](#bug-15d5e8) | api | POST /booking with negative totalprice returns 400 — фактично: 200 | Medium | `tests/api/booking.spec.ts:127` |
+| [BUG-f7d540](#bug-f7d540) | api | POST /auth with wrong password returns 401 and no token — фактично: 200 | Medium | `tests/api/booking.spec.ts:63` |
+| [BUG-82f33b](#bug-82f33b) | ui | Reset App State clears the cart and restores Add to cart buttons — фактично: "Remove" | Medium | `tests/ui/cart.spec.ts:35` |
+| [BUG-88f0ad](#bug-88f0ad) | ui | whitespace-only customer info is rejected — фактично: "https://www.saucedemo.com/checkout-step-two.html" | Medium | `tests/ui/checkout.spec.ts:54` |
+| [BUG-4a5d2e](#bug-4a5d2e) | api | PUT and DELETE for a non-existent id return 404 — фактично: 405 | Minor | `tests/api/booking.spec.ts:93` |
 
 ---
 
@@ -31,7 +31,7 @@
 |---|---|
 | Серйозність | Major |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:176` › POST /booking without required fields returns 400 |
+| Автотест | `tests/api/booking.spec.ts:127` › POST /booking without required fields returns 400 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -49,10 +49,12 @@
 ```
 Error: Невалідні дані → 400 Bad Request, бронювання не створюється
 
-expect(received).toBe(expected) // Object.is equality
+expect(response).toHaveStatus(expected)
 
 Expected: 400
 Received: 500
+Request:  https://restful-booker.herokuapp.com/booking
+Body:     Internal Server Error
 ```
 
 </details>
@@ -68,7 +70,7 @@ Received: 500
 |---|---|
 | Серйозність | Major |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:176` › POST /booking with non-numeric totalprice returns 400 |
+| Автотест | `tests/api/booking.spec.ts:127` › POST /booking with non-numeric totalprice returns 400 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -86,10 +88,12 @@ Received: 500
 ```
 Error: Невалідні дані → 400 Bad Request, бронювання не створюється
 
-expect(received).toBe(expected) // Object.is equality
+expect(response).toHaveStatus(expected)
 
 Expected: 400
 Received: 200
+Request:  https://restful-booker.herokuapp.com/booking
+Body:     {"bookingid":2360,"booking":{"firstname":"Autotest","lastname":"PW-3cb24c01","totalprice":null,"depositpaid":true,"bookingdates":{"checkin":"2027-01-10","checkout":"2027-01-15"},"additionalneeds":"Breakfast"}}
 ```
 
 </details>
@@ -105,7 +109,7 @@ Received: 200
 |---|---|
 | Серйозність | Major |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:176` › POST /booking with an invalid date returns 400 |
+| Автотест | `tests/api/booking.spec.ts:127` › POST /booking with an invalid date returns 400 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -123,10 +127,12 @@ Received: 200
 ```
 Error: Невалідні дані → 400 Bad Request, бронювання не створюється
 
-expect(received).toBe(expected) // Object.is equality
+expect(response).toHaveStatus(expected)
 
 Expected: 400
 Received: 200
+Request:  https://restful-booker.herokuapp.com/booking
+Body:     {"bookingid":2356,"booking":{"firstname":"Autotest","lastname":"PW-ee510bb3","totalprice":150,"depositpaid":true,"bookingdates":{"checkin":"0NaN-aN-aN","checkout":"2027-01-10"},"additionalneeds":"Breakfast"}}
 ```
 
 </details>
@@ -142,7 +148,7 @@ Received: 200
 |---|---|
 | Серйозність | Major |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:176` › POST /booking with checkout before checkin returns 400 |
+| Автотест | `tests/api/booking.spec.ts:127` › POST /booking with checkout before checkin returns 400 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -160,10 +166,12 @@ Received: 200
 ```
 Error: Невалідні дані → 400 Bad Request, бронювання не створюється
 
-expect(received).toBe(expected) // Object.is equality
+expect(response).toHaveStatus(expected)
 
 Expected: 400
 Received: 200
+Request:  https://restful-booker.herokuapp.com/booking
+Body:     {"bookingid":2368,"booking":{"firstname":"Autotest","lastname":"PW-bf321e8a","totalprice":150,"depositpaid":true,"bookingdates":{"checkin":"2027-01-15","checkout":"2027-01-10"},"additionalneeds":"Breakfast"}}
 ```
 
 </details>
@@ -180,7 +188,7 @@ Received: 200
 | Серйозність | Major |
 | Система | https://www.saucedemo.com |
 | Браузер | chromium |
-| Автотест | `tests/ui/checkout.spec.ts:108` › overview step cannot be opened by URL without customer info |
+| Автотест | `tests/ui/checkout.spec.ts:71` › overview step cannot be opened by URL without customer info |
 | Спроб | 1 (впав у всіх) |
 
 **Передумова:** Залогінений `standard_user`, у кошику Sauce Labs Backpack, дані покупця не вводились.
@@ -191,7 +199,7 @@ Received: 200
 3. Перевірити, що крок з даними покупця не пропущено ❌
 
 **Очікуваний результат:**
-- Без даних покупця користувача повертає на /checkout-step-one.html — Expected pattern: /checkout-step-one\.html$/
+- Без даних покупця користувача повертає на /checkout-step-one.html — Expected pattern: /\/checkout-step-one\.html$/
 
 **Фактичний результат:**
 - Received string:  "https://www.saucedemo.com/checkout-step-two.html"
@@ -203,7 +211,7 @@ Error: Без даних покупця користувача повертає 
 
 expect(page).toHaveURL(expected) failed
 
-Expected pattern: /checkout-step-one\.html$/
+Expected pattern: /\/checkout-step-one\.html$/
 Received string:  "https://www.saucedemo.com/checkout-step-two.html"
 Timeout: 3000ms
 
@@ -227,7 +235,7 @@ Call log:
 | Серйозність | Major |
 | Система | https://www.saucedemo.com |
 | Браузер | chromium |
-| Автотест | `tests/ui/checkout.spec.ts:136` › order cannot be placed with an empty cart |
+| Автотест | `tests/ui/checkout.spec.ts:91` › order cannot be placed with an empty cart |
 | Спроб | 1 (впав у всіх) |
 
 **Передумова:** Залогінений `standard_user`, кошик порожній.
@@ -273,7 +281,7 @@ Call log:
 |---|---|
 | Серйозність | Medium |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:176` › POST /booking with negative totalprice returns 400 |
+| Автотест | `tests/api/booking.spec.ts:127` › POST /booking with negative totalprice returns 400 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -291,10 +299,12 @@ Call log:
 ```
 Error: Невалідні дані → 400 Bad Request, бронювання не створюється
 
-expect(received).toBe(expected) // Object.is equality
+expect(response).toHaveStatus(expected)
 
 Expected: 400
 Received: 200
+Request:  https://restful-booker.herokuapp.com/booking
+Body:     {"bookingid":2370,"booking":{"firstname":"Autotest","lastname":"PW-60ecddb9","totalprice":-100,"depositpaid":true,"bookingdates":{"checkin":"2027-01-10","checkout":"2027-01-15"},"additionalneeds":"Breakfast"}}
 ```
 
 </details>
@@ -310,7 +320,7 @@ Received: 200
 |---|---|
 | Серйозність | Medium |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:69` › POST /auth with wrong password returns 401 and no token |
+| Автотест | `tests/api/booking.spec.ts:63` › POST /auth with wrong password returns 401 and no token |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -328,10 +338,12 @@ Received: 200
 ```
 Error: Невірні облікові дані → 401 Unauthorized
 
-expect(received).toBe(expected) // Object.is equality
+expect(response).toHaveStatus(expected)
 
 Expected: 401
 Received: 200
+Request:  https://restful-booker.herokuapp.com/auth
+Body:     {"reason":"Bad credentials"}
 ```
 
 </details>
@@ -348,7 +360,7 @@ Received: 200
 | Серйозність | Medium |
 | Система | https://www.saucedemo.com |
 | Браузер | chromium |
-| Автотест | `tests/ui/cart.spec.ts:42` › Reset App State clears the cart and restores Add to cart buttons |
+| Автотест | `tests/ui/cart.spec.ts:35` › Reset App State clears the cart and restores Add to cart buttons |
 | Спроб | 1 (впав у всіх) |
 
 **Передумова:** Залогінений `standard_user`, відкрито каталог.
@@ -397,7 +409,7 @@ Call log:
 | Серйозність | Medium |
 | Система | https://www.saucedemo.com |
 | Браузер | chromium |
-| Автотест | `tests/ui/checkout.spec.ts:80` › whitespace-only customer info is rejected |
+| Автотест | `tests/ui/checkout.spec.ts:54` › whitespace-only customer info is rejected |
 | Спроб | 1 (впав у всіх) |
 
 **Передумова:** Залогінений `standard_user`, у кошику Sauce Labs Backpack і Sauce Labs Onesie, відкрито кошик.
@@ -408,7 +420,7 @@ Call log:
 3. Перевірити, що форма не пропускає порожні дані ❌
 
 **Очікуваний результат:**
-- Користувач лишається на кроці введення даних — Expected pattern: /checkout-step-one\.html$/
+- Користувач лишається на кроці введення даних — Expected pattern: /\/checkout-step-one\.html$/
 
 **Фактичний результат:**
 - Received string:  "https://www.saucedemo.com/checkout-step-two.html"
@@ -420,7 +432,7 @@ Error: Користувач лишається на кроці введення 
 
 expect(page).toHaveURL(expected) failed
 
-Expected pattern: /checkout-step-one\.html$/
+Expected pattern: /\/checkout-step-one\.html$/
 Received string:  "https://www.saucedemo.com/checkout-step-two.html"
 Timeout: 3000ms
 
@@ -443,7 +455,7 @@ Call log:
 |---|---|
 | Серйозність | Minor |
 | Система | https://restful-booker.herokuapp.com |
-| Автотест | `tests/api/booking.spec.ts:121` › PUT and DELETE for a non-existent id return 404 |
+| Автотест | `tests/api/booking.spec.ts:93` › PUT and DELETE for a non-existent id return 404 |
 | Спроб | 1 (впав у всіх) |
 
 **Кроки:**
@@ -463,17 +475,21 @@ Call log:
 ```
 Error: Метод PUT підтримується; відсутній саме ресурс, тож коректна відповідь — 404 Not Found
 
-expect(received).toBe(expected) // Object.is equality
+expect(response).toHaveStatus(expected)
 
 Expected: 404
 Received: 405
+Request:  https://restful-booker.herokuapp.com/booking/2147000000
+Body:     Method Not Allowed
 
 Error: Метод DELETE підтримується; відсутній саме ресурс, тож коректна відповідь — 404 Not Found
 
-expect(received).toBe(expected) // Object.is equality
+expect(response).toHaveStatus(expected)
 
 Expected: 404
 Received: 405
+Request:  https://restful-booker.herokuapp.com/booking/2147000000
+Body:     Method Not Allowed
 ```
 
 </details>

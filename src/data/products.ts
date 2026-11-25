@@ -14,6 +14,10 @@ export const PRODUCTS = {
 
 export const ALL_PRODUCTS: Product[] = Object.values(PRODUCTS);
 
+/** Page Objects accept a product object (`PRODUCTS.backpack`) or its name. */
+export type ProductRef = Product | string;
+export const nameOf = (product: ProductRef): string => (typeof product === 'string' ? product : product.name);
+
 export const CHECKOUT_INFO = {
   firstName: 'Test',
   lastName: 'User',

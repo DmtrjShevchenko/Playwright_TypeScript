@@ -7,6 +7,9 @@ export const API_CREDENTIALS = {
   password: process.env.BOOKER_PASSWORD ?? 'password123',
 } as const;
 
+/** Large enough never to collide with a real booking on the shared server. */
+export const NON_EXISTENT_ID = 2_147_000_000;
+
 /** Builds a valid booking; unique lastname makes test data traceable on the shared server. */
 export function buildBooking(overrides: Partial<Booking> = {}): Booking {
   return {

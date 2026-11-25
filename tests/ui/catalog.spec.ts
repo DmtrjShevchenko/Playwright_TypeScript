@@ -1,16 +1,9 @@
-import { test, expect } from '../../src/fixtures/ui';
-import { ALL_PRODUCTS } from '../../src/data/products';
-import { SORT_OPTIONS } from '../../src/pages/InventoryPage';
+import { test, expect, meta, ALL_PRODUCTS, SORT_OPTIONS } from '@ui';
 
-const meta = (severity: string) => ({
-  annotation: [
-    { type: 'severity', description: severity },
-    { type: 'precondition', description: 'Залогінений `standard_user`, відкрито каталог.' },
-  ],
-});
+const ON_CATALOG = 'Залогінений `standard_user`, відкрито каталог.';
 
 test.describe('Catalog', () => {
-  test('shows all 6 products with name, price and Add to cart button', meta('Major'), async ({ loggedIn }) => {
+  test('shows all 6 products with name, price and Add to cart button', meta('Major', ON_CATALOG), async ({ loggedIn }) => {
     await test.step('Перевірити кількість товарів', async () => {
       await expect(loggedIn.items, `У каталозі ${ALL_PRODUCTS.length} товарів`).toHaveCount(ALL_PRODUCTS.length);
     });
@@ -23,16 +16,15 @@ test.describe('Catalog', () => {
 
     await test.step('Перевірити ціну й кнопку Add to cart кожного товару', async () => {
       for (const product of ALL_PRODUCTS) {
-        const item = loggedIn.item(product.name);
-        await expect(item.getByTestId('inventory-item-price'), `Ціна ${product.name}`).toHaveText(`$${product.price}`);
-        await expect(item.getByRole('button', { name: 'Add to cart' }), `Кнопка Add to cart у ${product.name}`).toBeEnabled();
+        await expect(loggedIn.item(product).getByTestId('inventory-item-price'), `Ціна ${product.name}`).toHaveText(`$${product.price}`);
+        await expect(loggedIn.item(product).getByRole('button', { name: 'Add to cart' }), `Кнопка Add to cart у ${product.name}`).toBeEnabled();
       }
     });
   });
 });
 
 test.describe('Sorting', () => {
-  test('sorts products by price, low to high', meta('Medium'), async ({ loggedIn }) => {
+  test('sorts products by price, low to high', meta('Medium', ON_CATALOG), async ({ loggedIn }) => {
     await test.step('Обрати сортування Price (low to high)', async () => {
       await loggedIn.sortBy(SORT_OPTIONS.priceAsc);
     });
@@ -44,7 +36,7 @@ test.describe('Sorting', () => {
     });
   });
 
-  test('sorts products by name, Z to A', meta('Minor'), async ({ loggedIn }) => {
+  test('sorts products by name, Z to A', meta('Minor', ON_CATALOG), async ({ loggedIn }) => {
     await test.step('Обрати сортування Name (Z to A)', async () => {
       await loggedIn.sortBy(SORT_OPTIONS.nameDesc);
     });

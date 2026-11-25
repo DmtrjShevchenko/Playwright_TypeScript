@@ -1,10 +1,12 @@
-import { test as base, expect } from '@playwright/test';
+import { test as base } from '@playwright/test';
+import { expect } from '../support/matchers';
 import { LoginPage } from '../pages/LoginPage';
 import { InventoryPage } from '../pages/InventoryPage';
 import { CartPage } from '../pages/CartPage';
 import { CheckoutPage } from '../pages/CheckoutPage';
 import { ProductDetailsPage } from '../pages/ProductDetailsPage';
 import { PASSWORD, USERS } from '../data/users';
+import { PATHS } from '../data/paths';
 
 interface UiFixtures {
   loginPage: LoginPage;
@@ -26,7 +28,7 @@ export const test = base.extend<UiFixtures>({
   loggedIn: async ({ loginPage, inventoryPage, page }, use) => {
     await loginPage.goto();
     await loginPage.login(USERS.standard, PASSWORD);
-    await expect(page).toHaveURL(/\/inventory\.html$/);
+    await expect(page).toHaveURL(PATHS.inventory);
     await use(inventoryPage);
   },
 });
