@@ -49,10 +49,13 @@ jobs:
           path: bug-reports/
           retention-days: 14
 
+      # Not `if: failure()`: when every failure is a confirmed known bug the run is green (bug gate in
+      # src/reporters/bug-report.ts), but the bug reports still point to these traces and screenshots.
       - name: Upload traces / screenshots of failed tests
         uses: actions/upload-artifact@v4
-        if: ${{ failure() }}
+        if: ${{ !cancelled() }}
         with:
           name: test-results
           path: test-results/
+          if-no-files-found: ignore
           retention-days: 7
