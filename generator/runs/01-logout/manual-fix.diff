@@ -1,0 +1,44 @@
+--- generator/runs/01-logout/attempt-1.spec.ts	2026-11-25 13:47:51.648996500 +0200
++++ tests/ui/generated/01-logout.spec.ts	2026-11-25 13:51:44.431791700 +0200
+@@ -1,7 +1,5 @@
+ import { test, expect } from '../../../src/fixtures/ui';
+-
+-// TODO(data): move to ERRORS in src/data/users.ts as ERRORS.inventoryRequiresLogin
+-const INVENTORY_REQUIRES_LOGIN = "Epic sadface: You can only access '/inventory.html' when you are logged in.";
++import { ERRORS } from '../../../src/data/users';
+ 
+ test.describe('Logout', () => {
+   test(
+@@ -14,15 +12,12 @@
+     },
+     async ({ loggedIn, loginPage, page }) => {
+       await test.step('Відкрити бургер-меню', async () => {
+-        // TODO(page-object): add HeaderComponent.openMenu() / menuButton locator
+-        await page.getByRole('button', { name: 'Open Menu' }).click();
+-        // TODO(page-object): add HeaderComponent.logoutLink locator
+-        await expect(page.getByTestId('logout-sidebar-link'), 'У меню є пункт Logout').toBeVisible();
++        await loggedIn.header.openMenu();
++        await expect(loggedIn.header.logoutLink, 'У меню є пункт Logout').toBeVisible();
+       });
+ 
+       await test.step('Натиснути Logout', async () => {
+-        // TODO(page-object): add HeaderComponent.logout()
+-        await page.getByTestId('logout-sidebar-link').click();
++        await loggedIn.header.logoutLink.click();
+ 
+         await expect(page, 'Після виходу відкривається сторінка логіну').toHaveURL(/\/$/);
+         await expect(loginPage.loginButton, 'На сторінці логіну видно кнопку Login').toBeVisible();
+@@ -37,10 +32,9 @@
+           /\/inventory\.html$/,
+         );
+         await expect(loggedIn.items, 'Товари каталогу не показуються').toHaveCount(0);
+-        await expect(
+-          loginPage.error,
+-          `Показується помилка "${INVENTORY_REQUIRES_LOGIN}"`,
+-        ).toHaveText(INVENTORY_REQUIRES_LOGIN);
++        await expect(loginPage.error, `Показується помилка "${ERRORS.inventoryRequiresLogin}"`).toHaveText(
++          ERRORS.inventoryRequiresLogin,
++        );
+       });
+     },
+   );

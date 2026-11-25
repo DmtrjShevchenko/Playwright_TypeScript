@@ -1,0 +1,26 @@
+{
+  "case": "generator/cases/04-empty-cart-checkout.md",
+  "project": "ui",
+  "spec": "tests/ui/generated/04-empty-cart-checkout.spec.ts",
+  "model": "default",
+  "attempts": [
+    {
+      "attempt": 1,
+      "seconds": 6,
+      "costUsd": 0.010536400000000001,
+      "stage": "test",
+      "passed": false,
+      "pageObjectTodos": 0
+    },
+    {
+      "attempt": 2,
+      "seconds": 8,
+      "costUsd": 0.1242346,
+      "stage": "test",
+      "passed": false,
+      "pageObjectTodos": 0
+    }
+  ],
+  "passed": false,
+  "verdict": "possible product bug: test compiles and fails on an assertion — needs human triage"
+}

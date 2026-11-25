@@ -1,0 +1,51 @@
+Running 1 test using 1 worker
+
+  x  1 [ui] › tests\ui\generated\04-empty-cart-checkout.spec.ts:4:3 › Checkout › checkout with an empty cart is not possible @negative (7.8s)
+
+
+  1) [ui] › tests\ui\generated\04-empty-cart-checkout.spec.ts:4:3 › Checkout › checkout with an empty cart is not possible @negative › Натиснути Checkout 
+
+    Error: Оформлення не починається: користувач лишається на сторінці кошика /cart.html
+
+    expect(page).toHaveURL(expected) failed
+
+    Expected pattern: /\/cart\.html$/
+    Received string:  "https://www.saucedemo.com/checkout-step-one.html"
+    Timeout: 7000ms
+
+    Call log:
+      - Оформлення не починається: користувач лишається на сторінці кошика /cart.html with timeout 7000ms
+        18 × locator resolved to <html lang="en">…</html>
+           - unexpected value "https://www.saucedemo.com/checkout-step-one.html"
+
+
+      22 |           page,
+      23 |           'Оформлення не починається: користувач лишається на сторінці кошика /cart.html',
+    > 24 |         ).toHaveURL(/\/cart\.html$/);
+         |           ^
+      25 |       });
+      26 |     },
+      27 |   );
+        at F:\AQA\Playwright_TypeScript\Playwright_TypeScript\tests\ui\generated\04-empty-cart-checkout.spec.ts:24:11
+        at F:\AQA\Playwright_TypeScript\Playwright_TypeScript\tests\ui\generated\04-empty-cart-checkout.spec.ts:19:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\ui-generated-04-empty-cart-2258d-rt-is-not-possible-negative-ui\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\ui-generated-04-empty-cart-2258d-rt-is-not-possible-negative-ui\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\ui-generated-04-empty-cart-2258d-rt-is-not-possible-negative-ui\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\ui-generated-04-empty-cart-2258d-rt-is-not-possible-negative-ui\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\ui-generated-04-empty-cart-2258d-rt-is-not-possible-negative-ui\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [ui] › tests\ui\generated\04-empty-cart-checkout.spec.ts:4:3 › Checkout › checkout with an empty cart is not possible @negative

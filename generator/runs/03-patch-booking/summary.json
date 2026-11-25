@@ -1,0 +1,18 @@
+{
+  "case": "generator/cases/03-patch-booking.md",
+  "project": "api",
+  "spec": "tests/api/generated/03-patch-booking.spec.ts",
+  "model": "default",
+  "attempts": [
+    {
+      "attempt": 1,
+      "seconds": 10,
+      "costUsd": 0.11379059999999999,
+      "stage": "test",
+      "passed": true,
+      "pageObjectTodos": 0
+    }
+  ],
+  "passed": true,
+  "verdict": "passed"
+}

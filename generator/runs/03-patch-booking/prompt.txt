@@ -1,0 +1,423 @@
+You write one Playwright + TypeScript test file for an existing project.
+
+PROJECT RULES (.claude/CLAUDE.md):
+# Інструкції для AI-агента
+
+Проєкт: автотести на **Playwright + TypeScript**.
+- **UI**: https://www.saucedemo.com, користувач `standard_user` / `secret_sauce`
+- **API**: https://restful-booker.herokuapp.com/apidoc, `admin` / `password123`
+- **CI**: GitHub Actions (`.github/workflows/playwright.yml`), запуск на кожен push, HTML-звіт як артефакт
+
+## Структура
+
+```
+src/
+  pages/      Page Objects (LoginPage, InventoryPage, CartPage, CheckoutPage, HeaderComponent)
+  api/        BookingApi — тонка обгортка над APIRequestContext, повертає APIResponse
+  fixtures/   ui.ts (loginPage, inventoryPage, cartPage, checkoutPage, loggedIn), api.ts (bookingApi, token)
+  data/       тестові дані та очікувані тексти помилок
+  utils/      parsePrice, toCents
+  reporters/  bug-report.ts — генерує баг-репорти з упалих тестів
+tests/
+  ui/         *.spec.ts — Playwright project "ui" (Chromium, baseURL saucedemo, testIdAttribute=data-test)
+  api/        *.spec.ts — Playwright project "api" (без браузера, baseURL restful-booker)
+.claude/
+  skills/     скіли агента (додати UI-тест, додати API-тест, розібрати падіння)
+  prompts/    ключові промпти, якими генерувався проєкт
+AI_WORKLOG.md  журнал роботи агента (у корені — назва з тестового завдання)
+```
+
+## Команди
+
+| Що | Команда |
+|---|---|
+| Всі тести | `npm test` |
+| Тільки UI / API | `npm run test:ui` / `npm run test:api` |
+| Тільки негативні | `npx playwright test --grep @negative` |
+| Перевірка типів | `npm run typecheck` |
+| UI mode (покроково, time-travel) | `npm run test:watch` |
+| Один видимий браузер | `npm run test:headed` |
+| Без вікна браузера локально | `$env:HEADLESS='1'; npm run test:ui` (PowerShell) / `HEADLESS=1 npm run test:ui` (bash) |
+| Уповільнити дії, мс | `$env:SLOWMO='500'; npm run test:ui` |
+
+Локально UI-тести за замовчуванням **headed** (видно браузер), у CI (`CI=true`) — завжди headless.
+Агент, що запускає тести у фоні, має ставити `HEADLESS=1`, щоб не відкривати вікна користувачу.
+| Звіт | `npm run report` |
+
+Після будь-якої зміни: `npm run typecheck` і прогін зачепленого project. Не завершуй задачу з червоними тестами — або полагодь, або явно напиши, що впало і чому.
+
+## Правила написання тестів
+
+1. **Імпорт `test`/`expect` тільки з `src/fixtures/ui` або `src/fixtures/api`**, не з `@playwright/test` напряму.
+2. **Локатори — тільки в Page Objects.** У спеках жодних `page.locator('...')`, крім разових `getByTestId` всередині вже знайденого елемента.
+3. **Пріоритет локаторів**: `getByTestId` (атрибут `data-test`) → `getByRole` → `getByText`. CSS/XPath — заборонено, якщо є `data-test`.
+4. **Ніяких `waitForTimeout`** і ручних sleep. Тільки web-first assertions (`await expect(locator).toHave...`).
+5. **Кожен тест незалежний**: сам логіниться (фікстура `loggedIn`), сам створює і прибирає свої дані (API — `try/finally` + delete).
+6. **Тестові дані** — у `src/data/`. Тексти помилок — константами в `ERRORS`, не хардкодом у спеці.
+7. **Гроші порівнюємо в центах** (`toCents`) — без float-шуму.
+8. Негативні/граничні тести позначаємо тегом `@negative` у назві.
+9. Назва тесту описує очікувану поведінку: `'wrong password is rejected'`, а не `'test 3'`.
+10. API-флоу з кількох кроків — один тест з `test.step(...)`, а не `describe.serial` з залежними тестами.
+
+## Баги: тест перевіряє правильну поведінку, репорт генерується з падіння
+
+1. **Тест завжди описує правильну поведінку**, навіть якщо система зараз поводиться інакше. Не підганяй assertion під баг.
+2. **Тести на баги лежать у загальних спеках** своєї області (`checkout.spec.ts`, `booking.spec.ts`…). Окремих `known-bugs`-спек немає, `test.fail()` і `test.skip()` для багів не використовуємо: червоний тест = відкритий баг.
+3. **Баг-репорт генерує репортер** `src/reporters/bug-report.ts` (у `bug-reports/BUGS.md`, у CI — артефакт і job summary). Вручну баг-репорти не пишемо. Щоб репорт був якісним:
+   - кроки — через `test.step('<дія користувача українською>')`;
+   - у кожному ключовому assertion — повідомлення з очікуваною поведінкою: `expect(x, 'Невалідні дані → 400').toBe(400)`;
+   - анотації: `{ type: 'severity', description: 'Major' | 'Medium' | 'Minor' }`, для UI — `{ type: 'precondition', description: '...' }`;
+   - фактичне значення має бути `received`: `expect(String(status)).toMatch(/^(200|204)$/)`, а не `expect([200, 204]).toContain(status)`.
+4. Кілька незалежних перевірок в одному тесті — `expect.soft`, щоб репорт показав усі розбіжності.
+5. Опублікована копія для README — `/BUGS.md`, оновлюється **тільки з повного прогону**: `npm run bugs:publish`.
+6. **Задокументована поведінка — не баг**, навіть якщо вона розходиться з HTTP-семантикою (DELETE → 201 у Restful Booker). Тест перевіряє задокументоване, а розбіжність описується в README в розділі «Задокументовано, але розходиться з HTTP-семантикою».
+7. **Не вигадуй вимог.** Якщо очікувана поведінка не випливає ні з документації, ні з очевидної логіки (формат індексу, збереження сортування), це не баг, а пункт у README «Питання до вимог». Тест на таке не пишемо.
+8. **Падіння ≠ баг.** Репортер виносить падіння з ознаками проблеми оточення чи тесту (мережа, 502/503/504, таймаут, strict mode, `TypeError`) у «Потребує тріажу». Решту людина підтверджує перед заведенням бага.
+
+## Відомі особливості систем
+
+- Restful Booker: токен передається як `Cookie: token=<token>` (альтернатива — Basic auth).
+- Restful Booker — спільний публічний сервер, дані інших людей можуть з'являтися/зникати. Не покладайся на конкретні id, крім створених у тесті.
+- SauceDemo: стан кошика зберігається в localStorage; кожен тест у Playwright має свіжий контекст, тому кошик порожній на старті.
+
+## Робочий процес агента
+
+1. Перед змінами прочитай цей файл і відповідний скіл у `.claude/skills/`.
+2. Нові локатори перевіряй на живому сайті (через браузер або `npx playwright codegen https://www.saucedemo.com`), не вигадуй `data-test`.
+3. Після завершення значимої задачі — допиши запис у кореневий `AI_WORKLOG.md` (що зроблено, рішення, що перевірено, що не вийшло).
+4. Не комітити `playwright-report/`, `test-results/`, `bug-reports/`, `.env`.
+
+
+EXISTING CODE YOU MUST REUSE (do not redefine it):
+--- src/api/BookingApi.ts ---
+import { type APIRequestContext, type APIResponse } from '@playwright/test';
+
+export interface BookingDates {
+  checkin: string; // YYYY-MM-DD
+  checkout: string; // YYYY-MM-DD
+}
+
+export interface Booking {
+  firstname: string;
+  lastname: string;
+  totalprice: number;
+  depositpaid: boolean;
+  bookingdates: BookingDates;
+  additionalneeds?: string;
+}
+
+export interface CreateBookingResponse {
+  bookingid: number;
+  booking: Booking;
+}
+
+/** Thin wrapper over https://restful-booker.herokuapp.com/apidoc */
+export class BookingApi {
+  constructor(private readonly request: APIRequestContext) {}
+
+  createToken(username: string, password: string): Promise<APIResponse> {
+    return this.request.post('/auth', { data: { username, password } });
+  }
+
+  createBooking(booking: Booking): Promise<APIResponse> {
+    return this.request.post('/booking', { data: booking });
+  }
+
+  /** Sends an arbitrary (possibly invalid) payload — for validation / negative tests. */
+  createBookingRaw(payload: unknown): Promise<APIResponse> {
+    return this.request.post('/booking', { data: payload });
+  }
+
+  getBooking(id: number): Promise<APIResponse> {
+    return this.request.get(`/booking/${id}`);
+  }
+
+  updateBooking(id: number, booking: Booking, token?: string): Promise<APIResponse> {
+    return this.request.put(`/booking/${id}`, { data: booking, headers: authHeader(token) });
+  }
+
+  partialUpdateBooking(id: number, patch: Partial<Booking>, token?: string): Promise<APIResponse> {
+    return this.request.patch(`/booking/${id}`, { data: patch, headers: authHeader(token) });
+  }
+
+  deleteBooking(id: number, token?: string): Promise<APIResponse> {
+    return this.request.delete(`/booking/${id}`, { headers: authHeader(token) });
+  }
+}
+
+function authHeader(token?: string): Record<string, string> {
+  return token ? { Cookie: `token=${token}` } : {};
+}
+
+
+--- src/fixtures/api.ts ---
+import { test as base, expect } from '@playwright/test';
+import { BookingApi } from '../api/BookingApi';
+import { API_CREDENTIALS } from '../data/bookings';
+
+interface ApiFixtures {
+  bookingApi: BookingApi;
+  /** Valid auth token obtained via POST /auth. */
+  token: string;
+}
+
+export const test = base.extend<ApiFixtures>({
+  bookingApi: async ({ request }, use) => use(new BookingApi(request)),
+
+  token: async ({ bookingApi }, use) => {
+    const response = await bookingApi.createToken(API_CREDENTIALS.username, API_CREDENTIALS.password);
+    expect(response.status()).toBe(200);
+    const { token } = await response.json();
+    expect(token, 'auth token should be returned').toBeTruthy();
+    await use(token);
+  },
+});
+
+export { expect };
+
+
+--- src/data/bookings.ts ---
+import { randomUUID } from 'node:crypto';
+import type { Booking } from '../api/BookingApi';
+
+// Public demo credentials from https://restful-booker.herokuapp.com/apidoc
+export const API_CREDENTIALS = {
+  username: process.env.BOOKER_USERNAME ?? 'admin',
+  password: process.env.BOOKER_PASSWORD ?? 'password123',
+} as const;
+
+/** Builds a valid booking; unique lastname makes test data traceable on the shared server. */
+export function buildBooking(overrides: Partial<Booking> = {}): Booking {
+  return {
+    firstname: 'Autotest',
+    lastname: `PW-${randomUUID().slice(0, 8)}`,
+    totalprice: 150,
+    depositpaid: true,
+    bookingdates: { checkin: '2027-01-10', checkout: '2027-01-15' },
+    additionalneeds: 'Breakfast',
+    ...overrides,
+  };
+}
+
+
+--- tests/api/booking.spec.ts ---
+import { test, expect } from '../../src/fixtures/api';
+import type { Booking, CreateBookingResponse } from '../../src/api/BookingApi';
+import { API_CREDENTIALS, buildBooking } from '../../src/data/bookings';
+
+/** Large enough never to collide with a real booking on the shared server. */
+const NON_EXISTENT_ID = 2_147_000_000;
+
+test.describe('Booking API', () => {
+  test('auth, create, update, delete, then booking is gone', async ({ bookingApi }) => {
+    const token = await test.step('POST /auth returns a token', async () => {
+      const response = await bookingApi.createToken(API_CREDENTIALS.username, API_CREDENTIALS.password);
+      expect(response.status()).toBe(200);
+      const body = await response.json();
+      expect(body.token).toEqual(expect.any(String));
+      return body.token as string;
+    });
+
+    const original = buildBooking();
+    const bookingId = await test.step('POST /booking creates a booking', async () => {
+      const response = await bookingApi.createBooking(original);
+      expect(response.status()).toBe(200);
+      const body: CreateBookingResponse = await response.json();
+      expect(body.bookingid).toEqual(expect.any(Number));
+      expect(body.booking).toEqual(original);
+      return body.bookingid;
+    });
+
+    await test.step('GET /booking/:id returns the created booking', async () => {
+      const response = await bookingApi.getBooking(bookingId);
+      expect(response.status()).toBe(200);
+      expect(await response.json()).toEqual(original);
+    });
+
+    const updated: Booking = {
+      ...original,
+      firstname: 'Updated',
+      totalprice: 999,
+      depositpaid: false,
+      bookingdates: { checkin: '2027-02-01', checkout: '2027-02-03' },
+      additionalneeds: 'Late checkout',
+    };
+
+    await test.step('PUT /booking/:id updates the booking', async () => {
+      const response = await bookingApi.updateBooking(bookingId, updated, token);
+      expect(response.status()).toBe(200);
+      expect(await response.json()).toEqual(updated);
+    });
+
+    await test.step('GET /booking/:id reflects the update', async () => {
+      const response = await bookingApi.getBooking(bookingId);
+      expect(response.status()).toBe(200);
+      expect(await response.json()).toEqual(updated);
+    });
+
+    await test.step('DELETE /booking/:id removes the booking', async () => {
+      const response = await bookingApi.deleteBooking(bookingId, token);
+      // 201 Created is the DOCUMENTED response (apidoc), even though 200/204 would match HTTP semantics.
+      // Listed in README under "Задокументовано, але розходиться з HTTP-семантикою", not as a bug.
+      expect(response.status(), 'DELETE returns the documented 201 Created').toBe(201);
+    });
+
+    await test.step('GET /booking/:id returns 404 after delete', async () => {
+      const response = await bookingApi.getBooking(bookingId);
+      expect(response.status()).toBe(404);
+    });
+  });
+
+  test.describe('negative @negative', () => {
+    test(
+      'POST /auth with wrong password returns 401 and no token',
+      { annotation: [{ type: 'severity', description: 'Medium' }] },
+      async ({ bookingApi }) => {
+        const response = await test.step('POST /auth з username admin і невірним паролем', async () =>
+          bookingApi.createToken(API_CREDENTIALS.username, 'wrong-password'),
+        );
+
+        await test.step('Перевірити відповідь', async () => {
+          const body = await response.json();
+          expect(body, 'Токен не видається').not.toHaveProperty('token');
+          expect(response.status(), 'Невірні облікові дані → 401 Unauthorized').toBe(401);
+        });
+      },
+    );
+
+    test(
+      'PUT /booking/:id without token is forbidden and does not change data',
+      { annotation: [{ type: 'severity', description: 'Critical' }] },
+      async ({ bookingApi, token }) => {
+        const original = buildBooking();
+        const created: CreateBookingResponse = await test.step('POST /booking — створити бронювання', async () =>
+          (await bookingApi.createBooking(original)).json(),
+        );
+
+        try {
+          await test.step('PUT /booking/{id} без заголовка Cookie, з firstname "Hacker"', async () => {
+            const response = await bookingApi.updateBooking(created.bookingid, { ...original, firstname: 'Hacker' });
+            expect(response.status(), 'Зміна без токена заборонена → 403 Forbidden').toBe(403);
+          });
+
+          await test.step('GET /booking/{id} — перевірити, що дані не змінились', async () => {
+            const current = await bookingApi.getBooking(created.bookingid);
+            expect(await current.json(), 'Бронювання лишилось без змін').toEqual(original);
+          });
+        } finally {
+          await bookingApi.deleteBooking(created.bookingid, token);
+        }
+      },
+    );
+
+    test(
+      'GET /booking/:id for a non-existent id returns 404',
+      { annotation: [{ type: 'severity', description: 'Minor' }] },
+      async ({ bookingApi }) => {
+        await test.step(`GET /booking/${NON_EXISTENT_ID}`, async () => {
+          const response = await bookingApi.getBooking(NON_EXISTENT_ID);
+          expect(response.status(), 'Неіснуюче бронювання → 404 Not Found').toBe(404);
+        });
+      },
+    );
+
+    test(
+      'PUT and DELETE for a non-existent id return 404',
+      { annotation: [{ type: 'severity', description: 'Minor' }] },
+      async ({ bookingApi, token }) => {
+        await test.step(`PUT /booking/${NON_EXISTENT_ID} з валідним тілом і токеном`, async () => {
+          const response = await bookingApi.updateBooking(NON_EXISTENT_ID, buildBooking(), token);
+          expect.soft(response.status(), 'Метод PUT підтримується; відсутній саме ресурс, тож коректна відповідь — 404 Not Found').toBe(404);
+        });
+
+        await test.step(`DELETE /booking/${NON_EXISTENT_ID} з токеном`, async () => {
+          const response = await bookingApi.deleteBooking(NON_EXISTENT_ID, token);
+          expect.soft(response.status(), 'Метод DELETE підтримується; відсутній саме ресурс, тож коректна відповідь — 404 Not Found').toBe(404);
+        });
+      },
+    );
+  });
+
+  test.describe('validation @negative', () => {
+    const invalidPayloads: { title: string; severity: string; payload: () => unknown; step: string }[] = [
+      {
+        title: 'POST /booking without required fields returns 400',
+        severity: 'Major',
+        step: 'POST /booking з валідним бронюванням без поля firstname',
+        payload: () => {
+          const { firstname, ...rest } = buildBooking();
+          return rest;
+        },
+      },
+      {
+        title: 'POST /booking with non-numeric totalprice returns 400',
+        severity: 'Major',
+        step: 'POST /booking з "totalprice": "abc"',
+        payload: () => ({ ...buildBooking(), totalprice: 'abc' }),
+      },
+      {
+        title: 'POST /booking with an invalid date returns 400',
+        severity: 'Major',
+        step: 'POST /booking з невалідним "checkin": "2027-13-45" (checkout валідний: "2027-01-10")',
+        payload: () => buildBooking({ bookingdates: { checkin: '2027-13-45', checkout: '2027-01-10' } }),
+      },
+      {
+        title: 'POST /booking with checkout before checkin returns 400',
+        severity: 'Major',
+        step: 'POST /booking з "checkin": "2027-01-15", "checkout": "2027-01-10"',
+        payload: () => buildBooking({ bookingdates: { checkin: '2027-01-15', checkout: '2027-01-10' } }),
+      },
+      {
+        title: 'POST /booking with negative totalprice returns 400',
+        severity: 'Medium',
+        step: 'POST /booking з "totalprice": -100',
+        payload: () => buildBooking({ totalprice: -100 }),
+      },
+    ];
+
+    for (const { title, severity, step, payload } of invalidPayloads) {
+      test(title, { annotation: [{ type: 'severity', description: severity }] }, async ({ bookingApi, token }) => {
+        const response = await test.step(step, async () => bookingApi.createBookingRaw(payload()));
+        try {
+          await test.step('Перевірити, що бронювання відхилено', async () => {
+            expect(response.status(), 'Невалідні дані → 400 Bad Request, бронювання не створюється').toBe(400);
+          });
+        } finally {
+          // The API may wrongly accept the payload — never leave garbage on the shared server.
+          const body = await response.json().catch(() => null);
+          if (body?.bookingid) await bookingApi.deleteBooking(body.bookingid, token);
+        }
+      });
+    }
+  });
+});
+
+
+TASK
+Turn the test case below into ONE spec file. It will be saved as `tests/api/generated/03-patch-booking.spec.ts`, so imports are relative to that location
+(e.g. `import { test, expect } from '../../../src/fixtures/api';`).
+- Import test/expect only from the project's fixtures file.
+- Reuse Page Object / API client methods and test data constants. Do not invent methods that do not exist.
+- If an action has no Page Object method, use a locator inline (prefer getByTestId / getByRole) and put the comment
+  `// TODO(page-object): <what to add>` on the line above it.
+- Every step of the case → one `test.step('<step text in Ukrainian>')`. Key assertions get a message with the expected
+  behaviour: `expect(x, '<expected>')`. Add annotations `severity` and (for UI) `precondition`.
+- The test asserts the CORRECT behaviour from "Очікуваний результат". Never weaken it to match a possible bug.
+- API tests clean up everything they create in `finally`.
+- Answer with exactly one ```ts code block and nothing else.
+
+TEST CASE:
+Система: API · Restful Booker · Пріоритет: P2
+
+# Часткове оновлення бронювання (PATCH)
+
+Передумова: отримано токен (POST /auth, admin / password123), створено бронювання.
+
+Кроки:
+1. PATCH /booking/{id} з токеном і тілом {"firstname": "Patched", "totalprice": 777}.
+2. GET /booking/{id}.
+
+Очікуваний результат:
+- Крок 1: статус 200, у відповіді firstname = "Patched", totalprice = 777.
+- Крок 2: змінились тільки firstname і totalprice; lastname, depositpaid, bookingdates і additionalneeds такі самі, як при створенні.
+- Створене бронювання видаляється після тесту.

@@ -18,6 +18,13 @@ src/
 tests/
   ui/         *.spec.ts — Playwright project "ui" (Chromium, baseURL saucedemo, testIdAttribute=data-test)
   api/        *.spec.ts — Playwright project "api" (без браузера, baseURL restful-booker)
+tests/{ui,api}/generated/  спеки, згенеровані конвеєром з текстових кейсів (після ручного рев'ю — повноцінні тести пулу)
+scripts/
+  publish-bugs.mjs   повний прогін → /BUGS.md
+  generate-test.mjs  тест-кейс текстом → Playwright-тест (claude -p), див. generator/README.md
+generator/
+  cases/      вхідні тест-кейси текстом
+  runs/       докази прогонів конвеєра: промпт, відповіді моделі, логи, summary.json
 .claude/
   skills/     скіли агента (додати UI-тест, додати API-тест, розібрати падіння)
   prompts/    ключові промпти, якими генерувався проєкт

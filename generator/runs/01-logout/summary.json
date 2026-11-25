@@ -1,0 +1,18 @@
+{
+  "case": "generator/cases/01-logout.md",
+  "project": "ui",
+  "spec": "tests/ui/generated/01-logout.spec.ts",
+  "model": "default",
+  "attempts": [
+    {
+      "attempt": 1,
+      "seconds": 13,
+      "costUsd": 0.1484584,
+      "stage": "test",
+      "passed": true,
+      "pageObjectTodos": 3
+    }
+  ],
+  "passed": true,
+  "verdict": "passed"
+}

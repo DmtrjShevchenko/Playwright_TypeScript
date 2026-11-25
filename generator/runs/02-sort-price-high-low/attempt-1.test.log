@@ -1,0 +1,5 @@
+Running 1 test using 1 worker
+
+  ok 1 [ui] › tests\ui\generated\02-sort-price-high-low.spec.ts:7:3 › Inventory sorting › sorting by price high to low puts the most expensive item first and prices descend (643ms)
+
+  1 passed (1.2s)

@@ -1,0 +1,18 @@
+{
+  "case": "generator/cases/02-sort-price-high-low.md",
+  "project": "ui",
+  "spec": "tests/ui/generated/02-sort-price-high-low.spec.ts",
+  "model": "default",
+  "attempts": [
+    {
+      "attempt": 1,
+      "seconds": 16,
+      "costUsd": 0.1408698,
+      "stage": "test",
+      "passed": true,
+      "pageObjectTodos": 0
+    }
+  ],
+  "passed": true,
+  "verdict": "passed"
+}

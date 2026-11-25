@@ -11,4 +11,5 @@ export const ERRORS = {
   invalidCredentials: 'Epic sadface: Username and password do not match any user in this service',
   postalCodeRequired: 'Error: Postal Code is required',
   firstNameRequired: 'Error: First Name is required',
+  inventoryRequiresLogin: "Epic sadface: You can only access '/inventory.html' when you are logged in.",
 } as const;

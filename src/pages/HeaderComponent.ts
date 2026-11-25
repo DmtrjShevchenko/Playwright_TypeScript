@@ -16,9 +16,23 @@ export class HeaderComponent {
     await this.cartLink.click();
   }
 
+  async openMenu(): Promise<void> {
+    await this.page.getByRole('button', { name: 'Open Menu' }).click();
+  }
+
+  get logoutLink(): Locator {
+    return this.page.getByTestId('logout-sidebar-link');
+  }
+
   /** Burger menu → "Reset App State": clears the cart and app state. */
   async resetAppState(): Promise<void> {
-    await this.page.getByRole('button', { name: 'Open Menu' }).click();
+    await this.openMenu();
     await this.page.getByTestId('reset-sidebar-link').click();
+  }
+
+  /** Burger menu → "Logout". */
+  async logout(): Promise<void> {
+    await this.openMenu();
+    await this.logoutLink.click();
   }
 }

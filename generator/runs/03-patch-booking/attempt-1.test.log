@@ -1,0 +1,5 @@
+Running 1 test using 1 worker
+
+  ok 1 [api] › tests\api\generated\03-patch-booking.spec.ts:6:3 › Booking API — PATCH › PATCH /booking/:id updates only the sent fields and keeps the rest unchanged (1.1s)
+
+  1 passed (1.5s)
