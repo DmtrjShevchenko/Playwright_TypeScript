@@ -31,6 +31,11 @@ export class BookingApi {
     return this.request.post('/booking', { data: booking });
   }
 
+  /** Sends an arbitrary (possibly invalid) payload — for validation / negative tests. */
+  createBookingRaw(payload: unknown): Promise<APIResponse> {
+    return this.request.post('/booking', { data: payload });
+  }
+
   getBooking(id: number): Promise<APIResponse> {
     return this.request.get(`/booking/${id}`);
   }

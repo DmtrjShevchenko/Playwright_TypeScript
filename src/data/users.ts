@@ -10,4 +10,5 @@ export const ERRORS = {
   lockedOut: 'Epic sadface: Sorry, this user has been locked out.',
   invalidCredentials: 'Epic sadface: Username and password do not match any user in this service',
   postalCodeRequired: 'Error: Postal Code is required',
+  firstNameRequired: 'Error: First Name is required',
 } as const;

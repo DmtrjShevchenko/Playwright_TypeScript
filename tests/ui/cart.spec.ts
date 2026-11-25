@@ -21,4 +21,34 @@ test.describe('Cart', () => {
     await expect(cartPage.items).toHaveCount(0);
     await expect(cartPage.header.cartBadge).toBeHidden();
   });
+
+  test(
+    'Reset App State clears the cart and restores Add to cart buttons',
+    {
+      annotation: [
+        { type: 'severity', description: 'Medium' },
+        { type: 'precondition', description: 'Залогінений `standard_user`, відкрито каталог.' },
+      ],
+    },
+    async ({ loggedIn }) => {
+      const { backpack } = PRODUCTS;
+
+      await test.step(`Додати в кошик ${backpack.name}`, async () => {
+        await loggedIn.addToCart(backpack.name);
+        await expect(loggedIn.header.cartBadge).toHaveText('1');
+      });
+
+      await test.step('Відкрити бургер-меню, натиснути Reset App State', async () => {
+        await loggedIn.header.resetAppState();
+      });
+
+      await test.step('Перевірити стан кошика і кнопок на каталозі', async () => {
+        await expect(loggedIn.header.cartBadge, 'Лічильник кошика зникає').toBeHidden();
+        await expect(
+          loggedIn.item(backpack.name).getByRole('button', { name: 'Add to cart' }),
+          `У ${backpack.name} знову кнопка Add to cart`,
+        ).toBeVisible({ timeout: 3_000 });
+      });
+    },
+  );
 });

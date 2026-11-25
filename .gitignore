@@ -13,3 +13,6 @@ node_modules/
 
 # IDE
 .idea/
+
+# Generated bug reports (published copy lives in /BUGS.md)
+/bug-reports/

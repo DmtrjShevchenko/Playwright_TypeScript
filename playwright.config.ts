@@ -14,7 +14,12 @@ export default defineConfig({
   workers: isCI ? 2 : undefined,
   timeout: 30_000,
   expect: { timeout: 7_000 },
-  reporter: [['list'], ['html', { open: 'never' }]],
+  reporter: [
+    ['list'],
+    ['html', { open: 'never' }],
+    // Turns failed tests into Markdown bug reports (see src/reporters/bug-report.ts).
+    ['./src/reporters/bug-report.ts', { outputFile: 'bug-reports/BUGS.md' }],
+  ],
   use: {
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',

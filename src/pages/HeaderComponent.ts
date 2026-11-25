@@ -15,4 +15,10 @@ export class HeaderComponent {
   async openCart(): Promise<void> {
     await this.cartLink.click();
   }
+
+  /** Burger menu → "Reset App State": clears the cart and app state. */
+  async resetAppState(): Promise<void> {
+    await this.page.getByRole('button', { name: 'Open Menu' }).click();
+    await this.page.getByTestId('reset-sidebar-link').click();
+  }
 }

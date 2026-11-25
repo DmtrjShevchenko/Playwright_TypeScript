@@ -43,6 +43,11 @@ export class CheckoutPage {
     this.completeHeader = page.getByTestId('complete-header');
   }
 
+  /** Opens the overview step directly by URL, bypassing the customer information step. */
+  async gotoOverview(): Promise<void> {
+    await this.page.goto('/checkout-step-two.html');
+  }
+
   async fillInfo(info: Partial<CustomerInfo>): Promise<void> {
     if (info.firstName !== undefined) await this.firstName.fill(info.firstName);
     if (info.lastName !== undefined) await this.lastName.fill(info.lastName);

@@ -10,7 +10,8 @@
     "test:headed": "playwright test --project=ui --headed --workers=1",
     "test:watch": "playwright test --ui",
     "report": "playwright show-report",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "bugs:publish": "node scripts/publish-bugs.mjs"
   },
   "keywords": [],
   "author": "",
