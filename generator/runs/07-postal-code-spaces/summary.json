@@ -1,0 +1,31 @@
+{
+  "case": "generator/cases/07-postal-code-spaces.md",
+  "slug": "07-postal-code-spaces",
+  "project": "ui",
+  "model": "default",
+  "attempts": [
+    {
+      "attempt": 1,
+      "seconds": 15,
+      "costUsd": 0.1317666,
+      "stage": "test",
+      "passed": false,
+      "pageObjectTodos": 0
+    },
+    {
+      "attempt": 2,
+      "seconds": 12,
+      "costUsd": 0.1490906,
+      "stage": "test",
+      "passed": false,
+      "pageObjectTodos": 0
+    }
+  ],
+  "spec": "tests/ui/generated/07-postal-code-spaces.spec.ts",
+  "passed": false,
+  "status": "failed",
+  "verdict": "possible product bug: test compiles and fails on an assertion — needs human triage",
+  "inPool": "not added (see runs/)",
+  "costUsd": 0.2809,
+  "seconds": 27
+}

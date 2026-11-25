@@ -1,0 +1,75 @@
+Running 1 test using 1 worker
+
+  x  1 [ui] › tests\ui\generated\07-postal-code-spaces.spec.ts:8:3 › Checkout › postal code of only spaces is rejected as empty @negative (15.1s)
+
+
+  1) [ui] › tests\ui\generated\07-postal-code-spaces.spec.ts:8:3 › Checkout › postal code of only spaces is rejected as empty @negative › Натиснути "Continue" 
+
+    Error: Показано помилку "Error: Postal Code is required"
+
+    expect(locator).toHaveText(expected) failed
+
+    Locator: getByTestId('error')
+    Expected: "Error: Postal Code is required"
+    Timeout: 7000ms
+    Error: element(s) not found
+
+    Call log:
+      - Показано помилку "Error: Postal Code is required" getByTestId('error') with timeout 7000ms
+      - waiting for getByTestId('error')
+
+
+      43 |         await expect
+      44 |           .soft(checkoutPage.error, `Показано помилку "${ERRORS.postalCodeRequired}"`)
+    > 45 |           .toHaveText(ERRORS.postalCodeRequired);
+         |            ^
+      46 |         await expect
+      47 |           .soft(page, 'Користувач лишається на сторінці /checkout-step-one.html')
+      48 |           .toHaveURL(/\/checkout-step-one\.html$/);
+        at F:\AQA\Playwright_TypeScript\Playwright_TypeScript\tests\ui\generated\07-postal-code-spaces.spec.ts:45:12
+        at F:\AQA\Playwright_TypeScript\Playwright_TypeScript\tests\ui\generated\07-postal-code-spaces.spec.ts:41:7
+
+    Error: Користувач лишається на сторінці /checkout-step-one.html
+
+    expect(page).toHaveURL(expected) failed
+
+    Expected pattern: /\/checkout-step-one\.html$/
+    Received string:  "https://www.saucedemo.com/checkout-step-two.html"
+    Timeout: 7000ms
+
+    Call log:
+      - Користувач лишається на сторінці /checkout-step-one.html with timeout 7000ms
+        18 × locator resolved to <html lang="en">…</html>
+           - unexpected value "https://www.saucedemo.com/checkout-step-two.html"
+
+
+      46 |         await expect
+      47 |           .soft(page, 'Користувач лишається на сторінці /checkout-step-one.html')
+    > 48 |           .toHaveURL(/\/checkout-step-one\.html$/);
+         |            ^
+      49 |       });
+      50 |     },
+      51 |   );
+        at F:\AQA\Playwright_TypeScript\Playwright_TypeScript\tests\ui\generated\07-postal-code-spaces.spec.ts:48:12
+        at F:\AQA\Playwright_TypeScript\Playwright_TypeScript\tests\ui\generated\07-postal-code-spaces.spec.ts:41:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\ui-generated-07-postal-cod-9a0b1--rejected-as-empty-negative-ui\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\ui-generated-07-postal-cod-9a0b1--rejected-as-empty-negative-ui\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\ui-generated-07-postal-cod-9a0b1--rejected-as-empty-negative-ui\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\ui-generated-07-postal-cod-9a0b1--rejected-as-empty-negative-ui\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\ui-generated-07-postal-cod-9a0b1--rejected-as-empty-negative-ui\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [ui] › tests\ui\generated\07-postal-code-spaces.spec.ts:8:3 › Checkout › postal code of only spaces is rejected as empty @negative

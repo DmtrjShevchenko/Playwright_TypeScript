@@ -3,6 +3,7 @@ import { LoginPage } from '../pages/LoginPage';
 import { InventoryPage } from '../pages/InventoryPage';
 import { CartPage } from '../pages/CartPage';
 import { CheckoutPage } from '../pages/CheckoutPage';
+import { ProductDetailsPage } from '../pages/ProductDetailsPage';
 import { PASSWORD, USERS } from '../data/users';
 
 interface UiFixtures {
@@ -10,6 +11,7 @@ interface UiFixtures {
   inventoryPage: InventoryPage;
   cartPage: CartPage;
   checkoutPage: CheckoutPage;
+  productPage: ProductDetailsPage;
   /** Logs in as standard_user and returns the inventory page. */
   loggedIn: InventoryPage;
 }
@@ -19,6 +21,7 @@ export const test = base.extend<UiFixtures>({
   inventoryPage: async ({ page }, use) => use(new InventoryPage(page)),
   cartPage: async ({ page }, use) => use(new CartPage(page)),
   checkoutPage: async ({ page }, use) => use(new CheckoutPage(page)),
+  productPage: async ({ page }, use) => use(new ProductDetailsPage(page)),
 
   loggedIn: async ({ loginPage, inventoryPage, page }, use) => {
     await loginPage.goto();

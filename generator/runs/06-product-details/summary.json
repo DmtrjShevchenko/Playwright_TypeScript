@@ -1,0 +1,31 @@
+{
+  "case": "generator/cases/06-product-details.md",
+  "slug": "06-product-details",
+  "project": "ui",
+  "model": "default",
+  "attempts": [
+    {
+      "attempt": 1,
+      "seconds": 17,
+      "costUsd": 0.1382666,
+      "stage": "test",
+      "passed": false,
+      "pageObjectTodos": 7
+    },
+    {
+      "attempt": 2,
+      "seconds": 20,
+      "costUsd": 0.1692906,
+      "stage": "test",
+      "passed": true,
+      "pageObjectTodos": 8
+    }
+  ],
+  "spec": "tests/ui/generated/06-product-details.spec.ts",
+  "passed": true,
+  "status": "passed",
+  "verdict": "passed",
+  "inPool": "added",
+  "costUsd": 0.3076,
+  "seconds": 37
+}

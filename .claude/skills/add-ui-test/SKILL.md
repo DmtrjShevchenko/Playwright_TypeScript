@@ -11,7 +11,8 @@ description: Add or extend a Playwright UI test for SauceDemo (www.saucedemo.com
 2. **Перевір локатори на живому сайті.** SauceDemo має `data-test` майже на всьому; у конфігу `testIdAttribute: 'data-test'`, тож використовуй `page.getByTestId('<value>')`.
    Відомі значення: `username`, `password`, `login-button`, `error`, `title`, `inventory-item`, `inventory-item-name`,
    `inventory-item-price`, `product-sort-container`, `shopping-cart-link`, `shopping-cart-badge`, `checkout`,
-   `firstName`, `lastName`, `postalCode`, `continue`, `finish`, `subtotal-label`, `tax-label`, `total-label`, `complete-header`.
+   `firstName`, `lastName`, `postalCode`, `continue`, `finish`, `subtotal-label`, `tax-label`, `total-label`, `complete-header`, `back-to-products`;
+   сторінка товару: `inventory-item-name`, `inventory-item-desc`, `inventory-item-price`, `add-to-cart`, `remove` (ті самі `inventory-item-*`, що й у каталозі, тож спершу `ProductDetailsPage.waitForLoaded()`).
 3. **Якщо потрібного локатора/дії нема в Page Object — додай його туди** (`src/pages/*.ts`), а не в спеку.
    Нова сторінка → новий клас у `src/pages/` + фікстура в `src/fixtures/ui.ts`.
 4. **Напиши тест** у відповідному файлі `tests/ui/<area>.spec.ts`:

@@ -38,6 +38,11 @@ export class InventoryPage {
     await this.item(name).getByRole('button', { name: 'Add to cart' }).click();
   }
 
+  /** Opens the product details page by clicking the product name in its card. */
+  async openItem(name: string): Promise<void> {
+    await this.item(name).getByTestId('inventory-item-name').click();
+  }
+
   async removeFromCart(name: string): Promise<void> {
     await this.item(name).getByRole('button', { name: 'Remove' }).click();
   }

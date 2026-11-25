@@ -1,65 +1,87 @@
 #!/usr/bin/env node
 /**
- * Test-case text → Playwright test.
+ * Test-case text → Playwright test. One case or a whole pool of cases.
  *
- *   node scripts/generate-test.mjs <case.md> [--fix <n>] [--model <model>]
+ *   node scripts/generate-test.mjs <case.md | dir | pattern>... [--all] [--force] [--fix <n>] [--model <model>] [--dry-run]
  *
- * 1. Reads a plain-text test case (steps + expected result). Its first line must contain `Система: UI` or `Система: API`.
- * 2. Builds a prompt with the project's rules (.claude/CLAUDE.md), Page Objects / API client, fixtures, test data
- *    and one existing spec as a style example.
+ *   generator/cases/01-logout.md          one case
+ *   generator/cases                       every *.md in the directory
+ *   "generator/cases/0*.md"               simple * pattern (expanded by the script, so it works in PowerShell too)
+ *   --all                                 = generator/cases
+ *   --force                               regenerate cases whose spec already exists (by default they are skipped,
+ *                                         so manual fixes made after review are never overwritten)
+ *   --dry-run                             only show what would be generated, no model calls
+ *
+ * Per case:
+ * 1. Reads the case (first line: `Система: UI` or `Система: API`; then precondition, steps, expected result).
+ * 2. Builds a prompt with .claude/CLAUDE.md, Page Objects / API client, fixtures, test data and one spec as a style example.
  * 3. Calls Claude Code in headless mode (`claude -p`, no tools: the model sees only what we pass).
- * 4. Writes the spec to tests/<ui|api>/generated/<case>.spec.ts, runs `tsc --noEmit` and the test itself.
- * 5. If typecheck or the test fails and --fix > 0, sends the error back and asks for a corrected file.
+ * 4. Writes tests/<ui|api>/generated/<case>.spec.ts, runs `tsc --noEmit` and the test.
+ * 5. On failure and --fix > 0, sends the error back and asks for a corrected file.
+ * 6. Only a PASSING spec stays in the test pool. A failing one is kept in generator/runs/<case>/ for review
+ *    (and a spec that existed before --force is restored).
  *
- * Everything (prompt, raw model answers, run logs, summary) is saved to generator/runs/<case>/ as evidence.
+ * Evidence per case: generator/runs/<case>/ (prompt, raw answers, code and logs of each attempt, summary.json).
+ * Pool runs also write generator/runs/batch-summary.md.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const USAGE = 'Usage: node scripts/generate-test.mjs <case.md> [--fix <n>] [--model <model>]';
+const USAGE =
+  'Usage: node scripts/generate-test.mjs <case.md | dir | pattern>... [--all] [--force] [--fix <n>] [--model <model>] [--dry-run]';
 const FLAGS_WITH_VALUE = new Set(['--fix', '--model']);
+const DEFAULT_POOL = 'generator/cases';
 
-// Positional argument = the first one that is neither a flag nor a flag's value (so `--fix 1 case.md` works too).
+// ---------- arguments ----------
 const args = process.argv.slice(2);
 const positional = args.filter((a, i) => !a.startsWith('--') && !FLAGS_WITH_VALUE.has(args[i - 1]));
+const has = (name) => args.includes(`--${name}`);
 const flag = (name, fallback) => {
   const i = args.indexOf(`--${name}`);
   return i === -1 ? fallback : args[i + 1];
 };
 const maxFixes = Number(flag('fix', '1'));
 const model = flag('model', undefined);
+const force = has('force');
+const dryRun = has('dry-run');
 
-if (positional.length !== 1 || Number.isNaN(maxFixes)) {
+if ((positional.length === 0 && !has('all')) || Number.isNaN(maxFixes)) {
   console.error(USAGE);
   process.exit(2);
 }
 
-// The case path is relative to where the user ran the command; everything else is relative to the project root.
+// Paths from the command line are relative to where the user ran it; everything else — to the project root.
 // IDEs (IntelliJ "Run" on a .mjs file) start the script with cwd = scripts/, so never rely on cwd.
-const casePath = path.resolve(positional[0]);
+const startCwd = process.cwd();
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const inputs = [...positional.map((p) => path.resolve(startCwd, p)), ...(has('all') ? [path.join(PROJECT_ROOT, DEFAULT_POOL)] : [])];
 process.chdir(PROJECT_ROOT);
 
-if (!existsSync(casePath)) {
-  console.error(`Test case not found: ${casePath}\n${USAGE}`);
+const rel = (p) => path.relative(PROJECT_ROOT, p).split(path.sep).join('/');
+
+/** File, directory (*.md inside) or a simple `*` pattern in the file name. */
+function expand(input) {
+  if (existsSync(input) && statSync(input).isDirectory()) {
+    return readdirSync(input).filter((f) => f.endsWith('.md') && f.toLowerCase() !== 'readme.md').sort().map((f) => path.join(input, f));
+  }
+  if (path.basename(input).includes('*')) {
+    const dir = path.dirname(input);
+    const re = new RegExp(`^${path.basename(input).replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')}$`);
+    return existsSync(dir) ? readdirSync(dir).filter((f) => re.test(f)).sort().map((f) => path.join(dir, f)) : [];
+  }
+  return [input];
+}
+
+const cases = [...new Set(inputs.flatMap(expand))];
+const missing = cases.filter((c) => !existsSync(c));
+if (cases.length === 0 || missing.length) {
+  console.error(`${missing.length ? `Test case not found: ${missing.join(', ')}` : 'No test cases matched.'}\n${USAGE}`);
   process.exit(2);
 }
 
-const caseText = readFileSync(casePath, 'utf8');
-const project = /Система:\s*API/i.test(caseText.split('\n')[0]) ? 'api' : /Система:\s*UI/i.test(caseText.split('\n')[0]) ? 'ui' : null;
-if (!project) {
-  console.error('First line of the case must contain "Система: UI" or "Система: API".');
-  process.exit(2);
-}
-
-const slug = path.basename(casePath, path.extname(casePath));
-const specRel = `tests/${project}/generated/${slug}.spec.ts`;
-const runDir = `generator/runs/${slug}`;
-mkdirSync(path.dirname(specRel), { recursive: true });
-mkdirSync(runDir, { recursive: true });
-
+// ---------- helpers ----------
 const CONTEXT = {
   ui: [
     'src/pages/LoginPage.ts',
@@ -67,23 +89,30 @@ const CONTEXT = {
     'src/pages/InventoryPage.ts',
     'src/pages/CartPage.ts',
     'src/pages/CheckoutPage.ts',
+    'src/pages/ProductDetailsPage.ts',
     'src/fixtures/ui.ts',
     'src/data/users.ts',
     'src/data/products.ts',
     'tests/ui/cart.spec.ts',
   ],
   api: ['src/api/BookingApi.ts', 'src/fixtures/api.ts', 'src/data/bookings.ts', 'tests/api/booking.spec.ts'],
-}[project];
+};
 
-const file = (p) => `--- ${p} ---\n${readFileSync(p, 'utf8')}`;
+const fileBlock = (p) => `--- ${p} ---\n${readFileSync(p, 'utf8')}`;
 
-const prompt = `You write one Playwright + TypeScript test file for an existing project.
+function detectProject(caseText) {
+  const first = caseText.replace(/^﻿/, '').split('\n')[0];
+  return /Система:\s*API/i.test(first) ? 'api' : /Система:\s*UI/i.test(first) ? 'ui' : null;
+}
+
+function buildPrompt(caseText, project, specRel) {
+  return `You write one Playwright + TypeScript test file for an existing project.
 
 PROJECT RULES (.claude/CLAUDE.md):
 ${readFileSync('.claude/CLAUDE.md', 'utf8')}
 
 EXISTING CODE YOU MUST REUSE (do not redefine it):
-${CONTEXT.map(file).join('\n\n')}
+${CONTEXT[project].map(fileBlock).join('\n\n')}
 
 TASK
 Turn the test case below into ONE spec file. It will be saved as \`${specRel}\`, so imports are relative to that location
@@ -100,98 +129,172 @@ Turn the test case below into ONE spec file. It will be saved as \`${specRel}\`,
 
 TEST CASE:
 ${caseText}`;
+}
 
-writeFileSync(`${runDir}/prompt.txt`, prompt);
-
-function askModel(input, attempt) {
+function askModel(input, runDir, attempt) {
   const cliArgs = ['-p', '--output-format', 'json', '--tools', '', '--no-session-persistence'];
   if (model) cliArgs.push('--model', model);
   const started = Date.now();
   const res = spawnSync('claude', cliArgs, { input, encoding: 'utf8', shell: process.platform === 'win32', maxBuffer: 20e6 });
-  if (res.status !== 0) throw new Error(`claude -p failed (${res.status}): ${res.stderr || res.stdout}`);
+  if (res.status !== 0) throw new Error(`claude -p failed (${res.status}): ${(res.stderr || res.stdout).slice(0, 500)}`);
   const json = JSON.parse(res.stdout);
   writeFileSync(`${runDir}/attempt-${attempt}.response.md`, json.result ?? '');
   const code = (json.result ?? '').match(/```(?:ts|typescript)?\s*\n([\s\S]*?)```/)?.[1];
-  if (!code) throw new Error(`No code block in model answer (attempt ${attempt}). See ${runDir}/attempt-${attempt}.response.md`);
-  return { code, seconds: Math.round((Date.now() - started) / 1000), cost: json.total_cost_usd };
+  if (!code) throw new Error(`no code block in the model answer (attempt ${attempt}), see ${runDir}/attempt-${attempt}.response.md`);
+  return { code, seconds: Math.round((Date.now() - started) / 1000), cost: json.total_cost_usd ?? 0 };
 }
 
-function run(cmd, cmdArgs, env = {}) {
-  const res = spawnSync(cmd, cmdArgs, {
-    encoding: 'utf8',
-    shell: true,
-    env: { ...process.env, HEADLESS: '1', ...env },
-    maxBuffer: 20e6,
-  });
+function run(cmd, cmdArgs) {
+  const res = spawnSync(cmd, cmdArgs, { encoding: 'utf8', shell: true, env: { ...process.env, HEADLESS: '1' }, maxBuffer: 20e6 });
   return { ok: res.status === 0, output: `${res.stdout}\n${res.stderr}`.replace(/\u001b\[[0-9;]*m/g, '').trim() };
 }
 
-function check(attempt) {
+function check(specRel, project, runDir, attempt) {
   const tsc = run('npx', ['tsc', '--noEmit']);
-  const tscErrors = tsc.output.split('\n').filter((l) => l.includes(specRel.replace(/\//g, path.sep)) || l.includes(specRel)).join('\n');
+  const tscErrors = tsc.output
+    .split('\n')
+    .filter((l) => l.includes(specRel) || l.includes(specRel.replace(/\//g, path.sep)))
+    .join('\n');
   if (!tsc.ok && tscErrors) {
     writeFileSync(`${runDir}/attempt-${attempt}.typecheck.log`, tsc.output);
     return { stage: 'typecheck', ok: false, log: tscErrors };
   }
-  // Only the list reporter: generated runs must not overwrite bug-reports/BUGS.md.
+  // Only the list reporter: generator runs must not overwrite bug-reports/BUGS.md.
   const pw = run('npx', ['playwright', 'test', specRel, `--project=${project}`, '--reporter=list', '--retries=0']);
   writeFileSync(`${runDir}/attempt-${attempt}.test.log`, pw.output);
   return { stage: 'test', ok: pw.ok, log: pw.output.slice(-4000) };
 }
 
-const summary = { case: path.relative(PROJECT_ROOT, casePath).split(path.sep).join('/'), project, spec: specRel, model: model ?? 'default', attempts: [] };
-let input = prompt;
-let previousCode;
-let lastResult;
+function verdictFor(lastResult) {
+  const log = lastResult?.log ?? '';
+  const assertionFailure = /expect\(.+\)\.[\w.]+\(.*\) failed|Expected[\s\S]*Received/.test(log);
+  const codeProblem = /TypeError|ReferenceError|SyntaxError|strict mode violation|Test timeout of \d+ms exceeded/.test(log);
+  return lastResult?.stage === 'test' && assertionFailure && !codeProblem
+    ? 'possible product bug: test compiles and fails on an assertion — needs human triage'
+    : `failed at ${lastResult?.stage ?? 'generation'}: see the last attempt logs`;
+}
 
-for (let attempt = 1; attempt <= maxFixes + 1; attempt++) {
-  console.log(`\n[${slug}] attempt ${attempt}: asking model…`);
-  const { code, seconds, cost } = askModel(input, attempt);
-  if (code.trim() === previousCode?.trim()) {
-    // The model kept the test as is after seeing the failure: it considers the application wrong, not the test.
-    summary.attempts.push({ attempt, seconds, costUsd: cost, stage: 'unchanged', passed: false, pageObjectTodos: 0 });
-    summary.verdict = 'possible product bug: model kept the correct assertion after the failure';
-    console.log(`[${slug}] attempt ${attempt}: model returned the same code → possible product bug, stopping`);
-    break;
+// ---------- one case ----------
+function generateCase(casePath) {
+  const caseText = readFileSync(casePath, 'utf8');
+  const slug = path.basename(casePath, path.extname(casePath));
+  const project = detectProject(caseText);
+  const base = { case: rel(casePath), slug, project, model: model ?? 'default', attempts: [] };
+  if (!project) return { ...base, status: 'error', verdict: 'first line must contain "Система: UI" or "Система: API"' };
+
+  const specRel = `tests/${project}/generated/${slug}.spec.ts`;
+  const runDir = `generator/runs/${slug}`;
+  const previousSpec = existsSync(specRel) ? readFileSync(specRel, 'utf8') : undefined;
+  if (previousSpec !== undefined && !force) {
+    return { ...base, spec: specRel, status: 'skipped', verdict: 'spec already exists (use --force to regenerate)' };
   }
-  previousCode = code;
-  writeFileSync(specRel, code);
-  writeFileSync(`${runDir}/attempt-${attempt}.spec.ts`, code);
+  if (dryRun) return { ...base, spec: specRel, status: 'planned', verdict: previousSpec ? 'would regenerate (--force)' : 'would generate' };
 
-  const result = check(attempt);
-  lastResult = result;
-  const todos = (code.match(/TODO\(page-object\)/g) ?? []).length;
-  summary.attempts.push({ attempt, seconds, costUsd: cost, stage: result.stage, passed: result.ok, pageObjectTodos: todos });
-  console.log(`[${slug}] attempt ${attempt}: ${result.stage} ${result.ok ? 'PASSED' : 'FAILED'} (${seconds}s, TODO(page-object): ${todos})`);
-  if (result.ok) break;
+  mkdirSync(path.dirname(specRel), { recursive: true });
+  mkdirSync(runDir, { recursive: true });
+  const prompt = buildPrompt(caseText, project, specRel);
+  writeFileSync(`${runDir}/prompt.txt`, prompt);
 
-  input = `${prompt}
+  const summary = { ...base, spec: specRel };
+  let input = prompt;
+  let previousCode;
+  let lastResult;
+
+  try {
+    for (let attempt = 1; attempt <= maxFixes + 1; attempt++) {
+      console.log(`[${slug}] attempt ${attempt}: asking model…`);
+      const { code, seconds, cost } = askModel(input, runDir, attempt);
+      if (code.trim() === previousCode?.trim()) {
+        // The model kept the test as is after seeing the failure: it considers the application wrong, not the test.
+        summary.attempts.push({ attempt, seconds, costUsd: cost, stage: 'unchanged', passed: false, pageObjectTodos: 0 });
+        console.log(`[${slug}] attempt ${attempt}: model returned the same code, stopping`);
+        break;
+      }
+      previousCode = code;
+      writeFileSync(specRel, code);
+      writeFileSync(`${runDir}/attempt-${attempt}.spec.ts`, code);
+
+      lastResult = check(specRel, project, runDir, attempt);
+      const todos = (code.match(/TODO\(page-object\)/g) ?? []).length;
+      summary.attempts.push({ attempt, seconds, costUsd: cost, stage: lastResult.stage, passed: lastResult.ok, pageObjectTodos: todos });
+      console.log(`[${slug}] attempt ${attempt}: ${lastResult.stage} ${lastResult.ok ? 'PASSED' : 'FAILED'} (${seconds}s, TODO(page-object): ${todos})`);
+      if (lastResult.ok) break;
+
+      input = `${prompt}
 
 YOUR PREVIOUS ANSWER:
 \`\`\`ts
 ${code}
 \`\`\`
 
-IT FAILED AT ${result.stage.toUpperCase()}:
-${result.log}
+IT FAILED AT ${lastResult.stage.toUpperCase()}:
+${lastResult.log}
 
 If the failure is a TypeScript or test-code error, fix the code. If the test failed because the application behaves
 differently from "Очікуваний результат", that may be a real bug: keep the correct assertion and do NOT weaken it.
 Answer with the full corrected file in exactly one \`\`\`ts code block.`;
+    }
+    summary.passed = summary.attempts.at(-1)?.passed ?? false;
+    summary.status = summary.passed ? 'passed' : 'failed';
+    summary.verdict = summary.passed ? 'passed' : verdictFor(lastResult);
+  } catch (error) {
+    summary.passed = false;
+    summary.status = 'error';
+    summary.verdict = `error: ${error.message}`;
+  }
+
+  // Only a passing spec stays in the pool; otherwise restore the reviewed version or remove the draft.
+  if (!summary.passed) {
+    if (previousSpec !== undefined) writeFileSync(specRel, previousSpec);
+    else rmSync(specRel, { force: true });
+    summary.inPool = previousSpec !== undefined ? 'previous version restored' : 'not added (see runs/)';
+  } else {
+    summary.inPool = 'added';
+  }
+
+  summary.costUsd = Number(summary.attempts.reduce((s, a) => s + (a.costUsd ?? 0), 0).toFixed(4));
+  summary.seconds = summary.attempts.reduce((s, a) => s + (a.seconds ?? 0), 0);
+  writeFileSync(`${runDir}/summary.json`, JSON.stringify(summary, null, 2) + '\n');
+  console.log(`[${slug}] ${summary.status.toUpperCase()} — ${summary.verdict}`);
+  return summary;
 }
 
-summary.passed = summary.attempts.at(-1).passed;
-if (!summary.verdict && !summary.passed) {
-  const lastLog = lastResult?.log ?? '';
-  const assertionFailure = /expect\(.+\)\.[\w.]+\(.*\) failed|Expected[\s\S]*Received/.test(lastLog);
-  const codeProblem = /TypeError|ReferenceError|SyntaxError|strict mode violation|Test timeout of \d+ms exceeded/.test(lastLog);
-  summary.verdict =
-    lastResult?.stage === 'test' && assertionFailure && !codeProblem
-      ? 'possible product bug: test compiles and fails on an assertion — needs human triage'
-      : `failed at ${lastResult?.stage ?? 'generation'}: see the last attempt logs`;
+// ---------- pool ----------
+console.log(`Cases: ${cases.length}${force ? ' (--force)' : ''}${dryRun ? ' (--dry-run)' : ''}\n`);
+const results = [];
+for (const c of cases) {
+  results.push(generateCase(c));
+  console.log('');
 }
-summary.verdict ??= 'passed';
-console.log(`[${slug}] verdict: ${summary.verdict}`);
-writeFileSync(`${runDir}/summary.json`, JSON.stringify(summary, null, 2) + '\n');
-console.log(`\n[${slug}] ${summary.passed ? 'PASSED' : 'FAILED'} after ${summary.attempts.length} attempt(s) → ${specRel}`);
-process.exit(summary.passed ? 0 : 1);
+
+const icon = { passed: '✅', failed: '❌', error: '⚠️', skipped: '⏭️', planned: '📝' };
+const count = (s) => results.filter((r) => r.status === s).length;
+const totalCost = results.reduce((s, r) => s + (r.costUsd ?? 0), 0);
+
+console.log('Summary:');
+for (const r of results) console.log(`  ${icon[r.status]} ${r.slug.padEnd(28)} ${r.status.padEnd(8)} ${r.verdict}`);
+console.log(
+  `\npassed ${count('passed')} · failed ${count('failed')} · error ${count('error')} · skipped ${count('skipped')}` +
+    (dryRun ? ` · planned ${count('planned')}` : '') +
+    ` · cost $${totalCost.toFixed(2)}`,
+);
+
+if (cases.length > 1 && !dryRun) {
+  const md = [
+    '# Генератор: останній прогін по пулу',
+    '',
+    `${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC · кейсів: ${cases.length} · вартість: $${totalCost.toFixed(2)}${force ? ' · `--force`' : ''}`,
+    '',
+    '| Кейс | Проєкт | Статус | Спроб | Час, с | Вартість | У пулі | Вердикт |',
+    '|---|---|---|---|---|---|---|---|',
+    ...results.map(
+      (r) =>
+        `| [${r.slug}](../cases/${path.basename(r.case)}) | ${r.project ?? '—'} | ${icon[r.status]} ${r.status} | ${r.attempts.length || '—'} | ${r.seconds ?? '—'} | ${r.costUsd !== undefined ? `$${r.costUsd.toFixed(2)}` : '—'} | ${r.inPool ?? '—'} | ${r.verdict} |`,
+    ),
+    '',
+  ].join('\n');
+  writeFileSync('generator/runs/batch-summary.md', md);
+  console.log('→ generator/runs/batch-summary.md');
+}
+
+process.exit(results.some((r) => r.status === 'failed' || r.status === 'error') ? 1 : 0);

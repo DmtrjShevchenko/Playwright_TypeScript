@@ -1,0 +1,56 @@
+Running 1 test using 1 worker
+
+  x  1 [ui] › tests\ui\generated\06-product-details.spec.ts:6:3 › Product details › product page shows details, adds item to cart and returns to catalog with cart state kept (1.1s)
+
+
+  1) [ui] › tests\ui\generated\06-product-details.spec.ts:6:3 › Product details › product page shows details, adds item to cart and returns to catalog with cart state kept › Натиснути на назву товару Sauce Labs Backpack 
+
+    Error: Назва товару — Sauce Labs Backpack
+
+    expect(locator).toHaveText(expected) failed
+
+    Locator: getByTestId('inventory-item-name')
+    Expected: "Sauce Labs Backpack"
+    Error: strict mode violation: getByTestId('inventory-item-name') resolved to 6 elements:
+        1) <div class="inventory_item_name " data-test="inventory-item-name">Sauce Labs Backpack</div> aka getByTestId('item-4-title-link')
+        2) <div class="inventory_item_name " data-test="inventory-item-name">Sauce Labs Bike Light</div> aka getByTestId('item-0-title-link')
+        3) <div class="inventory_item_name " data-test="inventory-item-name">Sauce Labs Bolt T-Shirt</div> aka getByTestId('item-1-title-link')
+        4) <div class="inventory_item_name " data-test="inventory-item-name">Sauce Labs Fleece Jacket</div> aka getByTestId('item-5-title-link')
+        5) <div class="inventory_item_name " data-test="inventory-item-name">Sauce Labs Onesie</div> aka getByTestId('item-2-title-link')
+        6) <div class="inventory_item_name " data-test="inventory-item-name">Test.allTheThings() T-Shirt (Red)</div> aka getByTestId('item-3-title-link')
+
+    Call log:
+      - Назва товару — Sauce Labs Backpack getByTestId('inventory-item-name') with timeout 7000ms
+      - waiting for getByTestId('inventory-item-name')
+
+
+      21 |         await expect(page, 'Відкривається сторінка товару').toHaveURL(/\/inventory-item\.html\?id=\d+$/);
+      22 |         // TODO(page-object): add ProductDetailsPage with name, price, addToCart/remove and backToProducts locators
+    > 23 |         await expect(page.getByTestId('inventory-item-name'), `Назва товару — ${backpack.name}`).toHaveText(backpack.name);
+         |                                                                                                  ^
+      24 |         // TODO(page-object): ProductDetailsPage.price
+      25 |         const priceText = await page.getByTestId('inventory-item-price').innerText();
+      26 |         expect(toCents(parsePrice(priceText)), `Ціна товару — $${backpack.price}`).toBe(toCents(backpack.price));
+        at F:\AQA\Playwright_TypeScript\Playwright_TypeScript\tests\ui\generated\06-product-details.spec.ts:23:98
+        at F:\AQA\Playwright_TypeScript\Playwright_TypeScript\tests\ui\generated\06-product-details.spec.ts:17:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\ui-generated-06-product-de-10d4c-atalog-with-cart-state-kept-ui\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\ui-generated-06-product-de-10d4c-atalog-with-cart-state-kept-ui\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\ui-generated-06-product-de-10d4c-atalog-with-cart-state-kept-ui\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\ui-generated-06-product-de-10d4c-atalog-with-cart-state-kept-ui\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\ui-generated-06-product-de-10d4c-atalog-with-cart-state-kept-ui\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [ui] › tests\ui\generated\06-product-details.spec.ts:6:3 › Product details › product page shows details, adds item to cart and returns to catalog with cart state kept

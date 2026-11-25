@@ -9,7 +9,7 @@
 
 ```
 src/
-  pages/      Page Objects (LoginPage, InventoryPage, CartPage, CheckoutPage, HeaderComponent)
+  pages/      Page Objects (LoginPage, InventoryPage, CartPage, CheckoutPage, ProductDetailsPage, HeaderComponent)
   api/        BookingApi — тонка обгортка над APIRequestContext, повертає APIResponse
   fixtures/   ui.ts (loginPage, inventoryPage, cartPage, checkoutPage, loggedIn), api.ts (bookingApi, token)
   data/       тестові дані та очікувані тексти помилок
@@ -21,7 +21,7 @@ tests/
 tests/{ui,api}/generated/  спеки, згенеровані конвеєром з текстових кейсів (після ручного рев'ю — повноцінні тести пулу)
 scripts/
   publish-bugs.mjs   повний прогін → /BUGS.md
-  generate-test.mjs  тест-кейс текстом → Playwright-тест (claude -p), див. generator/README.md
+  generate-test.mjs  тест-кейс(и) текстом → Playwright-тест (claude -p): один кейс, папка, шаблон або --all; див. generator/README.md
 generator/
   cases/      вхідні тест-кейси текстом
   runs/       докази прогонів конвеєра: промпт, відповіді моделі, логи, summary.json

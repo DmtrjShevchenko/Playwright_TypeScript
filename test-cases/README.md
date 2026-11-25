@@ -4,7 +4,7 @@
 
 | Файл | Система | Кейсів |
 |---|---|---|
-| [ui-saucedemo.md](ui-saucedemo.md) | UI — https://www.saucedemo.com | 16 (10 позитивних, 6 негативних; 3 згенеровані) |
+| [ui-saucedemo.md](ui-saucedemo.md) | UI — https://www.saucedemo.com | 17 (11 позитивних, 6 негативних; 4 згенеровані) |
 | [api-restful-booker.md](api-restful-booker.md) | API — https://restful-booker.herokuapp.com | 11 (2 позитивні, 9 негативних; 1 згенерований) |
 
 ## Умовні позначення
@@ -27,6 +27,7 @@
 | UI-LOGIN-03 | Логін з невірним паролем | Негативний | P1 | ✅ | `tests/ui/login.spec.ts` › Login › wrong password is rejected @negative |
 | UI-LOGOUT-01 | Вихід із системи 🤖 | Позитивний | P1 | ✅ | `tests/ui/generated/01-logout.spec.ts` › Logout › logout returns to an empty login form and blocks direct access to inventory |
 | UI-CAT-01 | Каталог показує всі товари | Позитивний | P1 | ✅ | `tests/ui/catalog.spec.ts` › Catalog › shows all 6 products with name, price and Add to cart button |
+| UI-PROD-01 | Сторінка товару: деталі, додавання в кошик, повернення в каталог 🤖 | Позитивний | P2 | ✅ | `tests/ui/generated/06-product-details.spec.ts` › Product details › product page shows details, adds item to cart and returns to catalog with cart state kept |
 | UI-SORT-01 | Сортування за ціною від дешевших | Позитивний | P2 | ✅ | `tests/ui/catalog.spec.ts` › Sorting › sorts products by price, low to high |
 | UI-SORT-02 | Сортування за назвою Z→A | Позитивний | P3 | ✅ | `tests/ui/catalog.spec.ts` › Sorting › sorts products by name, Z to A |
 | UI-SORT-03 | Сортування за ціною від дорожчих 🤖 | Позитивний | P2 | ✅ | `tests/ui/generated/02-sort-price-high-low.spec.ts` › Inventory sorting › sorting by price high to low puts the most expensive item first and prices descend |

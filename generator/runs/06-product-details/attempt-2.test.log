@@ -1,0 +1,5 @@
+Running 1 test using 1 worker
+
+  ok 1 [ui] › tests\ui\generated\06-product-details.spec.ts:6:3 › Product details › product page shows details, adds item to cart and returns to catalog with cart state kept (752ms)
+
+  1 passed (1.5s)
